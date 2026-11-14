@@ -34,7 +34,7 @@ export function HubSettings({ hub, onChanged }: { hub: string; onChanged: () => 
 function QuotaSection({ hub, onChanged }: { hub: string; onChanged: () => void }) {
   return (
     <>
-      <SectionTitle>Traffic limit</SectionTitle>
+      <SectionTitle>流量限额</SectionTitle>
       <QuotaCard hub={hub} onChanged={onChanged} />
     </>
   );
@@ -72,17 +72,17 @@ function BasicsCard({ hub, onChanged }: { hub: string; onChanged: () => void }) 
       setDirty(false);
       setPassword("");
       onChanged();
-    }, "Hub settings saved.");
+    }, "HUB 设置已保存。");
 
   return (
     <>
-      <SectionTitle>Hub</SectionTitle>
+      <SectionTitle>虚拟 HUB</SectionTitle>
       <div className="card" style={{ padding: "var(--s4)", maxWidth: 640 }}>
         <div className="row2">
-          <Field label="Max concurrent sessions" hint="0 means unlimited.">
+          <Field label="最大并发会话数" hint="0 表示不限。">
             <input className="input mono" type="number" min={0} value={Number(data.MaxSession_u32) || 0} onChange={(e) => set("MaxSession_u32", Number(e.target.value))} />
           </Field>
-          <Field label="Hub type" hint="Static/dynamic matter only in a cluster.">
+          <Field label="HUB 类型" hint="静态/动态仅在集群中有区别。">
             <select className="select" value={Number(data.HubType_u32) || 0} onChange={(e) => set("HubType_u32", Number(e.target.value))}>
               {Object.entries(HUB_TYPES).map(([v, l]) => (
                 <option key={v} value={v}>{l}</option>
@@ -91,12 +91,12 @@ function BasicsCard({ hub, onChanged }: { hub: string; onChanged: () => void }) 
           </Field>
         </div>
         <CheckRow checked={Boolean(data.NoEnum_bool)} onChange={(v) => set("NoEnum_bool", v)}
-          label="Hide from anonymous enumeration" hint="Clients listing hubs before signing in do not see this one." />
-        <Field label="Hub admin password" hint="Only sent when you type a new one. Lets someone administer just this hub.">
+          label="对匿名枚举隐藏" hint="客户端登录前列出虚拟 HUB 时看不到这一个。" />
+        <Field label="HUB 管理密码" hint="仅在你输入新密码时才会发送。允许某人只管理该 HUB。">
           <input className="input" type="password" value={password} onChange={(e) => { setPassword(e.target.value); setDirty(true); }} autoComplete="off" />
         </Field>
         {dirty && (
-          <button className="btn btn--primary" onClick={() => void save()}>Save hub settings</button>
+          <button className="btn btn--primary" onClick={() => void save()}>保存 HUB 设置</button>
         )}
       </div>
     </>
@@ -104,23 +104,23 @@ function BasicsCard({ hub, onChanged }: { hub: string; onChanged: () => void }) 
 }
 
 const SWITCH_TYPES = [
-  { v: 0, l: "one file (no switching)" },
-  { v: 1, l: "per second" },
-  { v: 2, l: "per minute" },
-  { v: 3, l: "per hour" },
-  { v: 4, l: "per day" },
-  { v: 5, l: "per month" },
+  { v: 0, l: "单文件（不轮转）" },
+  { v: 1, l: "每秒" },
+  { v: 2, l: "每分钟" },
+  { v: 3, l: "每小时" },
+  { v: 4, l: "每天" },
+  { v: 5, l: "每月" },
 ];
 
 const PACKET_KINDS = [
-  { i: 0, l: "TCP connections" },
-  { i: 1, l: "All TCP packets" },
+  { i: 0, l: "TCP 连接" },
+  { i: 1, l: "所有 TCP 数据包" },
   { i: 2, l: "DHCP" },
   { i: 3, l: "UDP" },
   { i: 4, l: "ICMP" },
   { i: 5, l: "IP" },
   { i: 6, l: "ARP" },
-  { i: 7, l: "Ethernet" },
+  { i: 7, l: "以太网" },
 ];
 
 function LogCard({ hub }: { hub: string }) {
@@ -152,26 +152,26 @@ function LogCard({ hub }: { hub: string }) {
         PacketLogConfig_u32: packetConfig,
       });
       setDirty(false);
-    }, "Log settings saved.");
+    }, "日志设置已保存。");
 
   return (
     <>
-      <SectionTitle>Logging</SectionTitle>
+      <SectionTitle>日志</SectionTitle>
       <div className="card" style={{ padding: "var(--s4)", maxWidth: 640 }}>
         <CheckRow checked={Boolean(data.SaveSecurityLog_bool)} onChange={(v) => set("SaveSecurityLog_bool", v)}
-          label="Security log" hint="Logins, disconnections, administrative changes." />
+          label="安全日志" hint="登录、断开连接、管理操作。" />
         {Boolean(data.SaveSecurityLog_bool) && (
-          <Field label="Rotate security log">
+          <Field label="安全日志轮转">
             <select className="select" value={Number(data.SecurityLogSwitchType_u32) || 0} onChange={(e) => set("SecurityLogSwitchType_u32", Number(e.target.value))}>
               {SWITCH_TYPES.map((s) => <option key={s.v} value={s.v}>{s.l}</option>)}
             </select>
           </Field>
         )}
         <CheckRow checked={Boolean(data.SavePacketLog_bool)} onChange={(v) => set("SavePacketLog_bool", v)}
-          label="Packet log" hint="Per-packet records — powerful and heavy. Choose kinds below." />
+          label="数据包日志" hint="逐包记录 — 功能强大但开销很大。请在下方选择类别。" />
         {Boolean(data.SavePacketLog_bool) && (
           <>
-            <Field label="Rotate packet log">
+            <Field label="数据包日志轮转">
               <select className="select" value={Number(data.PacketLogSwitchType_u32) || 0} onChange={(e) => set("PacketLogSwitchType_u32", Number(e.target.value))}>
                 {SWITCH_TYPES.map((s) => <option key={s.v} value={s.v}>{s.l}</option>)}
               </select>
@@ -179,7 +179,7 @@ function LogCard({ hub }: { hub: string }) {
             {PACKET_KINDS.map((k) => (
               <Field key={k.i} label={k.l}>
                 <div className="seg">
-                  {["off", "headers", "full"].map((lbl, v) => (
+                  {["关闭", "仅头部", "完整"].map((lbl, v) => (
                     <button
                       key={lbl}
                       className={packetConfig[k.i] === v ? "on" : ""}
@@ -196,7 +196,7 @@ function LogCard({ hub }: { hub: string }) {
             ))}
           </>
         )}
-        {dirty && <button className="btn btn--primary" onClick={() => void save()}>Save log settings</button>}
+        {dirty && <button className="btn btn--primary" onClick={() => void save()}>保存日志设置</button>}
       </div>
     </>
   );
@@ -217,17 +217,17 @@ function MessageCard({ hub }: { hub: string }) {
   if (message === null) return null;
   return (
     <>
-      <SectionTitle>Message of the day</SectionTitle>
+      <SectionTitle>每日消息</SectionTitle>
       <div className="card" style={{ padding: "var(--s4)", maxWidth: 640 }}>
-        <Field label="Shown to clients when they connect" hint="Empty shows nothing.">
+        <Field label="客户端连接时显示的消息" hint="留空则不显示。">
           <textarea className="textarea" rows={4} value={message} onChange={(e) => { setMessage(e.target.value); setDirty(true); }} />
         </Field>
         {dirty && (
           <button
             className="btn btn--primary"
-            onClick={() => void guard(() => api.setHubMsg(hub, message), "Message saved.").then(() => setDirty(false))}
+            onClick={() => void guard(() => api.setHubMsg(hub, message), "消息已保存。").then(() => setDirty(false))}
           >
-            Save message
+            保存消息
           </button>
         )}
       </div>
@@ -260,7 +260,7 @@ function OptionsCard({ hub, kind }: { hub: string; kind: "admin" | "ext" }) {
       const body = { AdminOptionList: items.map((i) => ({ Name_str: i.Name_str, Value_u32: Number(i.Value_u32) || 0 })) };
       await (kind === "admin" ? api.setAdminOptions(hub, body) : api.setExtOptions(hub, body));
       setDirty(false);
-    }, "Options saved.");
+    }, "选项已保存。");
 
   return (
     <>
@@ -268,18 +268,18 @@ function OptionsCard({ hub, kind }: { hub: string; kind: "admin" | "ext" }) {
         count={items.length}
         actions={
           <button className="btn btn--sm" onClick={() => setOpen((o) => !o)}>
-            {open ? "Collapse" : "Expand"}
+            {open ? "收起" : "展开"}
           </button>
         }
       >
-        {kind === "admin" ? "Administration options" : "Extended options"}
+        {kind === "admin" ? "管理选项" : "扩展选项"}
       </SectionTitle>
       {open && (
         <div className="card" style={{ padding: "var(--s4)" }}>
           <div className="lede" style={{ marginBottom: "var(--s3)" }}>
             {kind === "admin"
-              ? "Limits on what a hub administrator may do. Non-zero enables the named restriction."
-              : "Per-hub behaviour switches, exactly as SoftEther names them."}
+              ? "对 HUB 管理员权限的限制。非零值即启用对应的限制项。"
+              : "按虚拟 HUB 的行为开关，名称与 SoftEther 完全一致。"}
           </div>
           <div className="optgrid">
             {items.map((item, index) => (
@@ -299,10 +299,10 @@ function OptionsCard({ hub, kind }: { hub: string; kind: "admin" | "ext" }) {
               </label>
             ))}
           </div>
-          {items.length === 0 && <Empty title="the server reports no options" />}
+          {items.length === 0 && <Empty title="服务器未报告任何选项" />}
           {dirty && (
             <button className="btn btn--primary" style={{ marginTop: "var(--s3)" }} onClick={() => void save()}>
-              Save options
+              保存选项
             </button>
           )}
         </div>
@@ -317,23 +317,22 @@ function DangerCard({ hub }: { hub: string }) {
   return (
     <div className="danger">
       <button className="btn btn--ghost" onClick={() => setDeleting(true)}>
-        <IconTrash size={14} /> Delete this hub
+        <IconTrash size={14} /> 删除该虚拟 HUB
       </button>
       {deleting && (
         <ConfirmSheet
-          title={`Delete hub ${hub}?`}
-          verb="Delete hub"
+          title={`删除虚拟 HUB ${hub}？`}
+          verb="删除 HUB"
           typed={hub}
           body={
             <>
-              Every user, group, session, rule and setting inside <b>{hub}</b> is destroyed with
-              it. There is no undo.
+              <b>{hub}</b> 内的所有用户、用户组、会话、规则和设置都将随之销毁。此操作无法撤销。
             </>
           }
           onClose={() => setDeleting(false)}
           onConfirm={async () => {
             await api.deleteHub(hub);
-            push("ok", `Hub ${hub} deleted.`);
+            push("ok", `虚拟 HUB ${hub} 已删除。`);
             navigate(`/`);
           }}
         />

@@ -126,7 +126,7 @@ export function Sheet({
             <h2 className="sheet__title">{title}</h2>
             {subtitle && <p className="sheet__sub">{subtitle}</p>}
           </div>
-          <button className="icon-btn" onClick={dismiss} aria-label="Close">
+          <button className="icon-btn" onClick={dismiss} aria-label="关闭">
             <IconClose size={17} />
           </button>
         </div>

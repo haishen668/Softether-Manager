@@ -15,14 +15,14 @@ import { Pill } from "../ui/Status";
  */
 
 const CONNECTION_TYPES: Record<number, string> = {
-  0: "client",
-  1: "initializing",
-  2: "login",
-  3: "additional",
-  4: "RPC / farm",
-  5: "admin",
-  6: "management",
-  7: "management",
+  0: "客户端",
+  1: "初始化",
+  2: "登录中",
+  3: "附加连接",
+  4: "RPC / 集群",
+  5: "管理",
+  6: "管理连接",
+  7: "管理连接",
 };
 
 export function Connections() {
@@ -38,29 +38,29 @@ export function Connections() {
 
   return (
     <div className="page">
-      <PageHead title="Connections" sub="live TCP connections into the VPN server" />
+      <PageHead title="连接" sub="进入 VPN 服务器的实时 TCP 连接" />
       {connections === null ? (
-        <LoadingBlock label="loading connections" />
+        <LoadingBlock label="正在加载连接" />
       ) : connections.length === 0 ? (
-        <Empty title="no connections">Which would be odd, since this panel is one.</Empty>
+        <Empty title="暂无连接">这反而少见，因为本面板就是其中之一。</Empty>
       ) : (
         <div className="card tcard">
           <div className="tscroll">
             <table className="dtable">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Kind</th>
-                  <th>Source</th>
-                  <th>Connected</th>
-                  <th className="tact" style={{ width: 130 }} aria-label="Actions" />
+                  <th>名称</th>
+                  <th>类型</th>
+                  <th>来源</th>
+                  <th>连接时间</th>
+                  <th className="tact" style={{ width: 130 }} aria-label="操作" />
                 </tr>
               </thead>
               <tbody>
                 {connections.map((c) => (
                   <tr key={String(c.Name_str)} className="clickable" onClick={() => setOpen(String(c.Name_str))}>
                     <td className="tmono">{String(c.Name_str)}</td>
-                    <td><Pill kind="idle" label={CONNECTION_TYPES[Number(c.Type_u32)] ?? `type ${c.Type_u32}`} /></td>
+                    <td><Pill kind="idle" label={CONNECTION_TYPES[Number(c.Type_u32)] ?? `类型 ${c.Type_u32}`} /></td>
                     <td className="tmono">
                       {String(c.Hostname_str || c.Ip_ip)}:{String(c.Port_u32)}
                       {c.Hostname_str ? <span className="tsub">{String(c.Ip_ip)}</span> : null}
@@ -74,7 +74,7 @@ export function Connections() {
                           setKilling(c);
                         }}
                       >
-                        <IconClose size={13} /> Disconnect
+                        <IconClose size={13} /> 断开
                       </button>
                     </td>
                   </tr>
@@ -88,13 +88,13 @@ export function Connections() {
       {open && <ConnectionSheet name={open} onClose={() => setOpen(null)} />}
       {killing && (
         <ConfirmSheet
-          title="Disconnect this connection?"
-          verb="Disconnect"
+          title="断开该连接？"
+          verb="断开"
           body={
             <>
-              <span className="mono">{String(killing.Name_str)}</span> from{" "}
-              <span className="mono">{String(killing.Ip_ip)}</span> is cut. Cutting a management
-              connection may sign out an administrator — possibly you.
+              来自 <span className="mono">{String(killing.Ip_ip)}</span> 的{" "}
+              <span className="mono">{String(killing.Name_str)}</span> 将被切断。切断管理连接可能使管理员登出 —
+              也可能是你自己。
             </>
           }
           onClose={() => setKilling(null)}
@@ -125,16 +125,16 @@ function ConnectionSheet({ name, onClose }: { name: string; onClose: () => void 
   );
 
   return (
-    <Sheet title="Connection" subtitle={name} onClose={onClose}>
+    <Sheet title="连接" subtitle={name} onClose={onClose}>
       {error && <div className="alert alert--err">{error}</div>}
       {!detail && !error && <LoadingBlock />}
       {detail && (
         <KV
           rows={[
-            ["source", `${detail.Hostname_str || detail.Ip_ip}:${detail.Port_u32}`],
-            ["connected", formatDate(detail.ConnectedTime_dt as string)],
-            ["client", `${detail.ClientStr_str ?? "—"} ${detail.ClientVer_u32 ?? ""}`],
-            ["server", `${detail.ServerStr_str ?? "—"} ${detail.ServerVer_u32 ?? ""}`],
+            ["来源", `${detail.Hostname_str || detail.Ip_ip}:${detail.Port_u32}`],
+            ["连接时间", formatDate(detail.ConnectedTime_dt as string)],
+            ["客户端", `${detail.ClientStr_str ?? "—"} ${detail.ClientVer_u32 ?? ""}`],
+            ["服务端", `${detail.ServerStr_str ?? "—"} ${detail.ServerVer_u32 ?? ""}`],
           ]}
         />
       )}

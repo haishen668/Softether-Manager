@@ -49,7 +49,7 @@ export function Console() {
     try {
       parsed = params.trim() ? JSON.parse(params) : {};
     } catch {
-      setError("The parameters are not valid JSON.");
+      setError("参数不是有效的 JSON。");
       return;
     }
     setBusy(true);
@@ -57,7 +57,7 @@ export function Console() {
     try {
       const r = await api.rpcCall(String(selected.name), parsed);
       setResult(JSON.stringify(r, null, 2));
-      push("ok", `${selected.name} answered.`);
+      push("ok", `${selected.name} 已应答。`);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setResult(null);
@@ -69,15 +69,15 @@ export function Console() {
   return (
     <div className="page">
       <PageHead
-        title="API console"
-        sub="every documented RPC, raw"
+        title="API 控制台"
+        sub="全部已记录的 RPC，原生调用"
       />
       <div className="console">
         <div className="console__list">
           {/* the box flexes horizontally; left in the column flow it would
               stretch its height instead */}
           <div style={{ display: "flex" }}>
-            <SearchBox value={query} onChange={setQuery} placeholder="method name…" />
+            <SearchBox value={query} onChange={setQuery} placeholder="方法名…" />
           </div>
           <div className="console__methods">
             {filtered === null ? (
@@ -99,9 +99,9 @@ export function Console() {
 
         <div className="console__work">
           {!selected ? (
-            <Empty title="pick a method">
-              The parameters template fills in with the documented example values; edit and run.
-              Writes here are as real as anywhere else in the panel.
+            <Empty title="选择一个方法">
+              参数模板会填入文档中的示例值；编辑后即可运行。
+              这里的写操作与面板其他地方一样真实有效。
             </Empty>
           ) : (
             <>
@@ -110,7 +110,7 @@ export function Console() {
                 <span className="mono">{String(selected.name)}</span>
               </div>
               <p className="lede" style={{ margin: "var(--s2) 0 var(--s3)" }}>{String(selected.desc || selected.title)}</p>
-              <div className="micro" style={{ marginBottom: 6 }}>parameters</div>
+              <div className="micro" style={{ marginBottom: 6 }}>参数</div>
               <textarea
                 className="textarea mono"
                 rows={Math.min(16, Math.max(4, params.split("\n").length))}
@@ -120,13 +120,13 @@ export function Console() {
               />
               <div style={{ display: "flex", gap: "var(--s2)", margin: "var(--s3) 0" }}>
                 <button className="btn btn--primary" onClick={call} disabled={busy}>
-                  {busy ? <span className="spin" /> : <IconPlay size={14} />} Call {String(selected.name)}
+                  {busy ? <span className="spin" /> : <IconPlay size={14} />} 调用 {String(selected.name)}
                 </button>
               </div>
               {error && <ErrorAlert>{error}</ErrorAlert>}
               {result && (
                 <>
-                  <div className="micro" style={{ margin: "var(--s2) 0 6px" }}>result</div>
+                  <div className="micro" style={{ margin: "var(--s2) 0 6px" }}>结果</div>
                   <pre className="console__result mono">{result}</pre>
                 </>
               )}

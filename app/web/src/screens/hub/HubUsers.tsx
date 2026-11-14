@@ -90,32 +90,32 @@ export function HubUsers({ hub }: { hub: string }) {
         count={users?.length}
         actions={
           <div style={{ display: "flex", gap: "var(--s2)", flexWrap: "wrap" }}>
-            <SearchBox value={query} onChange={setQuery} placeholder="name, group, note…" />
+            <SearchBox value={query} onChange={setQuery} placeholder="名称、用户组、备注…" />
             <button className="btn btn--primary btn--sm" onClick={() => setCreating(true)}>
-              <IconPlus size={14} /> New user
+              <IconPlus size={14} /> 新建用户
             </button>
           </div>
         }
       >
-        Users
+        用户
       </SectionTitle>
 
       {filtered === null ? (
-        <LoadingBlock label="loading users" />
+        <LoadingBlock label="正在加载用户" />
       ) : filtered.length === 0 ? (
         <Empty
-          title={query ? "nothing matches" : "no users yet"}
+          title={query ? "无匹配结果" : "还没有用户"}
           action={
             !query && (
               <button className="btn btn--primary" onClick={() => setCreating(true)}>
-                <IconPlus size={15} /> Create the first user
+                <IconPlus size={15} /> 创建第一个用户
               </button>
             )
           }
         >
           {query
-            ? "No user, group or note matches that search."
-            : "A user is one VPN identity: a name, a way to authenticate, and the policy that binds it."}
+            ? "没有匹配该搜索的用户、用户组或备注。"
+            : "一个用户就是一个 VPN 身份：一个名字、一种认证方式，以及约束它的安全策略。"}
         </Empty>
       ) : (
         <>
@@ -126,16 +126,16 @@ export function HubUsers({ hub }: { hub: string }) {
                 <table className="dtable">
                   <thead>
                     <tr>
-                      <SortTh sortKey="user" sort={sort} onSort={toggle}>User</SortTh>
-                      <SortTh sortKey="status" sort={sort} onSort={toggle} style={{ width: 110 }}>Status</SortTh>
-                      <SortTh sortKey="group" sort={sort} onSort={toggle}>Group</SortTh>
-                      <SortTh sortKey="auth" sort={sort} onSort={toggle}>Auth</SortTh>
-                      <SortTh sortKey="login" sort={sort} onSort={toggle}>Last login</SortTh>
-                      <SortTh sortKey="logins" sort={sort} onSort={toggle} style={{ width: 90 }}>Logins</SortTh>
-                      <SortTh sortKey="transfer" sort={sort} onSort={toggle}>Transfer</SortTh>
-                      <SortTh sortKey="quota" sort={sort} onSort={toggle}>Limit</SortTh>
-                      <SortTh sortKey="expires" sort={sort} onSort={toggle}>Expires</SortTh>
-                      <th className="tact" style={{ width: 96 }} aria-label="Actions" />
+                      <SortTh sortKey="user" sort={sort} onSort={toggle}>用户</SortTh>
+                      <SortTh sortKey="status" sort={sort} onSort={toggle} style={{ width: 110 }}>状态</SortTh>
+                      <SortTh sortKey="group" sort={sort} onSort={toggle}>用户组</SortTh>
+                      <SortTh sortKey="auth" sort={sort} onSort={toggle}>认证</SortTh>
+                      <SortTh sortKey="login" sort={sort} onSort={toggle}>最近登录</SortTh>
+                      <SortTh sortKey="logins" sort={sort} onSort={toggle} style={{ width: 90 }}>登录次数</SortTh>
+                      <SortTh sortKey="transfer" sort={sort} onSort={toggle}>流量</SortTh>
+                      <SortTh sortKey="quota" sort={sort} onSort={toggle}>限额</SortTh>
+                      <SortTh sortKey="expires" sort={sort} onSort={toggle}>过期</SortTh>
+                      <th className="tact" style={{ width: 96 }} aria-label="操作" />
                     </tr>
                   </thead>
                   <tbody>
@@ -169,13 +169,13 @@ export function HubUsers({ hub }: { hub: string }) {
                       <UserStatePill user={u} online={online.has(String(u.Name_str).toLowerCase())} />
                     </div>
                     <div className="spec">
-                      <span className="chip"><i>group</i>{String(u.GroupName_str || "—")}</span>
-                      <span className="chip"><i>auth</i>{AUTH_TYPES[Number(u.AuthType_u32)] ?? "?"}</span>
-                      <span className="chip"><i>data</i>{formatBytes(bytes.send + bytes.recv)}</span>
-                      <span className="chip"><i>seen</i>{timeAgo(u.LastLoginTime_dt as string)}</span>
+                      <span className="chip"><i>组</i>{String(u.GroupName_str || "—")}</span>
+                      <span className="chip"><i>认证</i>{AUTH_TYPES[Number(u.AuthType_u32)] ?? "?"}</span>
+                      <span className="chip"><i>流量</i>{formatBytes(bytes.send + bytes.recv)}</span>
+                      <span className="chip"><i>活跃</i>{timeAgo(u.LastLoginTime_dt as string)}</span>
                       {quota?.has_limit && (
                         <span className={`chip${quota.blocked ? "" : " chip--brand"}`}>
-                          <i>limit</i>
+                          <i>限额</i>
                           {formatBytes(meteredBytes(bytes, quota.metric))} /{" "}
                           {formatBytes(quota.limit_bytes)}
                         </span>
@@ -213,13 +213,13 @@ export function HubUsers({ hub }: { hub: string }) {
 export function UserStatePill({ user, online }: { user: Wire; online?: boolean }) {
   // Denied and expired win: they are why the account cannot be used, which
   // matters more than whether a session is still up at this instant.
-  if (user.DenyAccess_bool) return <Pill kind="err" label="denied" />;
+  if (user.DenyAccess_bool) return <Pill kind="err" label="已拒绝" />;
   const expires = user.Expires_dt ?? user.ExpireTime_dt;
   if (!isNever(expires as string) && new Date(expires as string).getTime() < Date.now())
-    return <Pill kind="warn" label="expired" />;
+    return <Pill kind="warn" label="已过期" />;
   const connected = online ?? Boolean(user.Online_bool);
-  if (connected) return <Pill kind="ok" label="online" />;
-  return <Pill kind="idle" label="offline" />;
+  if (connected) return <Pill kind="ok" label="在线" />;
+  return <Pill kind="idle" label="离线" />;
 }
 
 function UserRow({ user: u, quota, moved, online, onOpen, onVpnFile }: { user: Wire; quota?: Quota; moved: { send: number; recv: number }; online: boolean; onOpen: () => void; onVpnFile: () => void }) {
@@ -242,12 +242,12 @@ function UserRow({ user: u, quota, moved, online, onOpen, onVpnFile }: { user: W
         {formatBytes(bytes.send + bytes.recv)}
       </td>
       <td><QuotaCell quota={quota} net={moved} /></td>
-      <td className="tmono">{isNever(expires as string) ? "never" : formatDate(expires as string)}</td>
+      <td className="tmono">{isNever(expires as string) ? "永不" : formatDate(expires as string)}</td>
       <td className="tact">
         <button
           className="btn btn--sm btn--ghost"
-          title="Download .vpn connection file"
-          aria-label="Download .vpn connection file"
+          title="下载 .vpn 连接文件"
+          aria-label="下载 .vpn 连接文件"
           onClick={(e) => {
             e.stopPropagation();
             onVpnFile();

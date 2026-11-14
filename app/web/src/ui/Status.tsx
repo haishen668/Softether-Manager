@@ -65,7 +65,7 @@ export function JobStatusPill({ status }: { status: string }) {
 }
 
 /** Online / offline for hubs, sessions, links -- anything with a boolean life. */
-export function OnlinePill({ online, onLabel = "online", offLabel = "offline" }: {
+export function OnlinePill({ online, onLabel = "在线", offLabel = "离线" }: {
   online: boolean;
   onLabel?: string;
   offLabel?: string;

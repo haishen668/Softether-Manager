@@ -51,11 +51,11 @@ export function HubSecureNat({ hub }: { hub: string }) {
     },
     reload: load,
     noun: "SecureNAT",
-    onWord: "enabled",
-    offWord: "disabled",
+    onWord: "已启用",
+    offWord: "已停用",
   });
 
-  if (!data || !options) return <LoadingBlock label="asking the hub" />;
+  if (!data || !options) return <LoadingBlock label="正在查询 HUB" />;
 
   const status = data.status as Wire;
   const hubOnline = data.hub_online !== false;
@@ -72,7 +72,7 @@ export function HubSecureNat({ hub }: { hub: string }) {
       await api.setSecurenatOptions(hub, body);
       setDirty(false);
       await load();
-    }, "SecureNAT options saved.");
+    }, "SecureNAT 选项已保存。");
 
   return (
     <>
@@ -80,15 +80,15 @@ export function HubSecureNat({ hub }: { hub: string }) {
         actions={
           <span className="switchbox">
             <span style={{ display: "inline-flex", alignItems: "center", gap: "var(--s3)" }}>
-              <Pill kind={enabled ? "ok" : "idle"} label={enabled ? "enabled" : "disabled"} />
+              <Pill kind={enabled ? "ok" : "idle"} label={enabled ? "已启用" : "已停用"} />
               <Switch
                 on={enabled}
                 pending={toggle.pending}
                 target={toggle.target}
                 onToggle={() => setConfirming(!enabled)}
                 label="SecureNAT"
-                onWord="enabled"
-                offWord="disabled"
+                onWord="已启用"
+                offWord="已停用"
               />
             </span>
             <OutcomeNote outcome={toggle.outcome} />
@@ -101,37 +101,37 @@ export function HubSecureNat({ hub }: { hub: string }) {
       <div className={`alert ${enabled ? "alert--ok" : ""}`} style={{ marginBottom: "var(--s4)" }}>
         <div>
           <div className="alert__t">
-            {enabled ? "SecureNAT is enabled" : "SecureNAT is disabled"}
-            {toggle.pending ? " — changing…" : ""}
+            {enabled ? "SecureNAT 已启用" : "SecureNAT 已停用"}
+            {toggle.pending ? " — 正在切换…" : ""}
           </div>
           {enabled ? (
             <>
-              The virtual NAT{options.UseNat_bool ? "" : " (off in the options)"} and DHCP server
-              {options.UseDhcp_bool ? "" : " (off in the options)"} run inside <b>{hub}</b>
-              {status?.Ip_ip ? <> at <span className="mono">{String(status.Ip_ip)}</span></> : null}.
-              {!hubOnline && " The hub itself is offline right now, so nothing is being served until it comes back."}
+              虚拟 NAT{options.UseNat_bool ? "" : "（已在选项中关闭）"}与 DHCP 服务器
+              {options.UseDhcp_bool ? "" : "（已在选项中关闭）"}运行在 <b>{hub}</b> 内
+              {status?.Ip_ip ? <>，地址为 <span className="mono">{String(status.Ip_ip)}</span></> : null}。
+              {!hubOnline && " 虚拟 HUB 本身当前离线，在它恢复之前不会提供任何服务。"}
             </>
           ) : (
-            <>Clients connecting to <b>{hub}</b> get no virtual router: no NAT to the internet, no DHCP leases. The options below are kept and apply the moment it is enabled.</>
+            <>连接到 <b>{hub}</b> 的客户端将没有虚拟路由器：无法通过 NAT 上网，也没有 DHCP 租约。下方的选项会保留，一旦启用立即生效。</>
           )}
         </div>
       </div>
 
       <div className="fleet">
-        <div className="fleet__cell"><div className="fleet__n">{enabled ? formatCount(Number(status?.NumTcpSessions_u32)) : "—"}</div><div className="micro">TCP sessions</div></div>
-        <div className="fleet__cell"><div className="fleet__n">{enabled ? formatCount(Number(status?.NumUdpSessions_u32)) : "—"}</div><div className="micro">UDP sessions</div></div>
+        <div className="fleet__cell"><div className="fleet__n">{enabled ? formatCount(Number(status?.NumTcpSessions_u32)) : "—"}</div><div className="micro">TCP 会话</div></div>
+        <div className="fleet__cell"><div className="fleet__n">{enabled ? formatCount(Number(status?.NumUdpSessions_u32)) : "—"}</div><div className="micro">UDP 会话</div></div>
         <div className="fleet__cell"><div className="fleet__n">{enabled ? formatCount(Number(status?.NumIcmpSessions_u32)) : "—"}</div><div className="micro">ICMP</div></div>
-        <div className="fleet__cell"><div className="fleet__n">{enabled ? formatCount(Number(status?.NumDhcpClients_u32)) : "—"}</div><div className="micro">DHCP clients</div></div>
-        <div className="fleet__cell"><div className="fleet__n">{status?.IsKernelMode_bool ? "kernel" : status?.IsRawIpMode_bool ? "raw IP" : "user"}</div><div className="micro">NAT mode</div></div>
+        <div className="fleet__cell"><div className="fleet__n">{enabled ? formatCount(Number(status?.NumDhcpClients_u32)) : "—"}</div><div className="micro">DHCP 客户端</div></div>
+        <div className="fleet__cell"><div className="fleet__n">{status?.IsKernelMode_bool ? "内核" : status?.IsRawIpMode_bool ? "raw IP" : "用户态"}</div><div className="micro">NAT 模式</div></div>
       </div>
 
-      <SectionTitle>Virtual router</SectionTitle>
+      <SectionTitle>虚拟路由器</SectionTitle>
       <div className="card" style={{ padding: "var(--s4)", maxWidth: 720 }}>
         <div className="row2">
-          <Field label="Virtual IP" hint="The router's own address inside the hub.">
+          <Field label="虚拟 IP" hint="路由器在虚拟 HUB 内部自己的地址。">
             <input className="input mono" value={String(options.Ip_ip ?? "")} onChange={(e) => set("Ip_ip", e.target.value)} spellCheck={false} inputMode="decimal" />
           </Field>
-          <Field label="Subnet mask">
+          <Field label="子网掩码">
             <input className="input mono" value={String(options.Mask_ip ?? "")} onChange={(e) => set("Mask_ip", e.target.value)} spellCheck={false} inputMode="decimal" />
           </Field>
         </div>
@@ -143,59 +143,59 @@ export function HubSecureNat({ hub }: { hub: string }) {
         </div>
 
         <CheckRow checked={Boolean(options.UseNat_bool)} onChange={(v) => set("UseNat_bool", v)}
-          label="Virtual NAT" hint="Clients reach the internet through the hub, translated to the host's address." />
+          label="虚拟 NAT" hint="客户端经虚拟 HUB 上网，地址被转换为宿主机地址。" />
         {Boolean(options.UseNat_bool) && (
           <div className="row2">
-            <Field label="TCP timeout (s)">
+            <Field label="TCP 超时（秒）">
               <input className="input mono" type="number" min={1} value={Number(options.NatTcpTimeout_u32 ?? 1800)} onChange={(e) => set("NatTcpTimeout_u32", Number(e.target.value))} />
             </Field>
-            <Field label="UDP timeout (s)">
+            <Field label="UDP 超时（秒）">
               <input className="input mono" type="number" min={1} value={Number(options.NatUdpTimeout_u32 ?? 60)} onChange={(e) => set("NatUdpTimeout_u32", Number(e.target.value))} />
             </Field>
           </div>
         )}
 
         <CheckRow checked={Boolean(options.UseDhcp_bool)} onChange={(v) => set("UseDhcp_bool", v)}
-          label="Virtual DHCP server" hint="Hands addresses to clients as they connect." />
+          label="虚拟 DHCP 服务器" hint="客户端连接时向其分发地址。" />
         {Boolean(options.UseDhcp_bool) && (
           <>
             <div className="row2">
-              <Field label="Lease range start">
+              <Field label="租约范围起始">
                 <input className="input mono" value={String(options.DhcpLeaseIPStart_ip ?? "")} onChange={(e) => set("DhcpLeaseIPStart_ip", e.target.value)} spellCheck={false} inputMode="decimal" />
               </Field>
-              <Field label="Lease range end">
+              <Field label="租约范围结束">
                 <input className="input mono" value={String(options.DhcpLeaseIPEnd_ip ?? "")} onChange={(e) => set("DhcpLeaseIPEnd_ip", e.target.value)} spellCheck={false} inputMode="decimal" />
               </Field>
             </div>
             <div className="row2">
-              <Field label="Gateway to push" hint="Usually the virtual IP above.">
+              <Field label="下发的网关" hint="通常为上方的虚拟 IP。">
                 <input className="input mono" value={String(options.DhcpGatewayAddress_ip ?? "")} onChange={(e) => set("DhcpGatewayAddress_ip", e.target.value)} spellCheck={false} inputMode="decimal" />
               </Field>
-              <Field label="Lease time (s)">
+              <Field label="租约时长（秒）">
                 <input className="input mono" type="number" min={60} value={Number(options.DhcpExpireTimeSpan_u32 ?? 7200)} onChange={(e) => set("DhcpExpireTimeSpan_u32", Number(e.target.value))} />
               </Field>
             </div>
             <div className="row2">
-              <Field label="DNS server">
+              <Field label="DNS 服务器">
                 <input className="input mono" value={String(options.DhcpDnsServerAddress_ip ?? "")} onChange={(e) => set("DhcpDnsServerAddress_ip", e.target.value)} spellCheck={false} inputMode="decimal" />
               </Field>
-              <Field label="DNS server 2">
+              <Field label="DNS 服务器 2">
                 <input className="input mono" value={String(options.DhcpDnsServerAddress2_ip ?? "")} onChange={(e) => set("DhcpDnsServerAddress2_ip", e.target.value)} spellCheck={false} inputMode="decimal" />
               </Field>
             </div>
-            <Field label="Domain name">
+            <Field label="域名">
               <input className="input mono" value={String(options.DhcpDomainName_str ?? "")} onChange={(e) => set("DhcpDomainName_str", e.target.value)} spellCheck={false} />
             </Field>
-            <Field label="Static routes to push" hint="Comma-separated network/mask/gateway triples, e.g. 192.168.5.0/255.255.255.0/10.0.0.2">
+            <Field label="下发的静态路由" hint="以逗号分隔的 网络/掩码/网关 三元组，例如 192.168.5.0/255.255.255.0/10.0.0.2">
               <input className="input mono" value={String(options.DhcpPushRoutes_str ?? "")} onChange={(e) => { set("DhcpPushRoutes_str", e.target.value); set("ApplyDhcpPushRoutes_bool", true); }} spellCheck={false} />
             </Field>
           </>
         )}
         <CheckRow checked={Boolean(options.SaveLog_bool)} onChange={(v) => set("SaveLog_bool", v)}
-          label="Log SecureNAT activity" />
+          label="记录 SecureNAT 日志" />
 
         {dirty && (
-          <button className="btn btn--primary" onClick={() => void save()}>Save options</button>
+          <button className="btn btn--primary" onClick={() => void save()}>保存选项</button>
         )}
       </div>
 
@@ -203,17 +203,17 @@ export function HubSecureNat({ hub }: { hub: string }) {
 
       {confirming !== null && (
         <ConfirmSheet
-          title={confirming ? "Enable SecureNAT?" : "Disable SecureNAT?"}
-          verb={confirming ? "Enable" : "Disable"}
+          title={confirming ? "启用 SecureNAT？" : "停用 SecureNAT？"}
+          verb={confirming ? "启用" : "停用"}
           danger={!confirming}
           body={
             confirming ? (
               <>
-                The virtual NAT and DHCP server start inside <b>{hub}</b>. Never enable it on a hub
-                bridged to a network that already has a DHCP server — the two will fight.
+                虚拟 NAT 与 DHCP 服务器将在 <b>{hub}</b> 内启动。切勿在已桥接到含有 DHCP
+                服务器的网络上启用 — 两者会互相冲突。
               </>
             ) : (
-              <>Clients relying on the virtual router lose their internet path immediately.</>
+              <>依赖虚拟路由器的客户端将立即失去上网路径。</>
             )
           }
           onClose={() => setConfirming(null)}
@@ -251,22 +251,22 @@ function NatTables({ hub, enabled }: { hub: string; enabled: boolean }) {
       <SectionTitle
         actions={
           <div className="seg">
-            <button className={tab === "nat" ? "on" : ""} onClick={() => setTab("nat")}>NAT sessions</button>
-            <button className={tab === "dhcp" ? "on" : ""} onClick={() => setTab("dhcp")}>DHCP leases</button>
+            <button className={tab === "nat" ? "on" : ""} onClick={() => setTab("nat")}>NAT 会话</button>
+            <button className={tab === "dhcp" ? "on" : ""} onClick={() => setTab("dhcp")}>DHCP 租约</button>
           </div>
         }
       >
-        Live tables
+        实时表
       </SectionTitle>
 
       {tab === "nat" ? (
         nat === null ? (
           <LoadingBlock />
         ) : nat.length === 0 ? (
-          <Empty title="no NAT sessions">
+          <Empty title="暂无 NAT 会话">
             {enabled
-              ? "Translation entries appear as clients talk through the virtual NAT."
-              : "SecureNAT is disabled, so nothing is being translated."}
+              ? "客户端经由虚拟 NAT 通信时，转换条目会随之出现。"
+              : "SecureNAT 已停用，因此没有任何地址转换。"}
           </Empty>
         ) : (
           <div className="card tcard">
@@ -274,7 +274,7 @@ function NatTables({ hub, enabled }: { hub: string; enabled: boolean }) {
               <table className="dtable">
                 <thead>
                   <tr>
-                    <th>Proto</th><th>Source</th><th>Destination</th><th>Transfer</th><th>Last activity</th>
+                    <th>协议</th><th>来源</th><th>目标</th><th>流量</th><th>最近活动</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -290,23 +290,23 @@ function NatTables({ hub, enabled }: { hub: string; enabled: boolean }) {
                 </tbody>
               </table>
             </div>
-            {nat.length > 200 && <div className="micro" style={{ padding: "var(--s2) var(--s4)" }}>showing the first 200 of {nat.length}</div>}
+            {nat.length > 200 && <div className="micro" style={{ padding: "var(--s2) var(--s4)" }}>显示前 200 条，共 {nat.length} 条</div>}
           </div>
         )
       ) : dhcp === null ? (
         <LoadingBlock />
       ) : dhcp.length === 0 ? (
-        <Empty title="no leases">
+        <Empty title="暂无租约">
           {enabled
-            ? "Leases appear as the virtual DHCP server hands out addresses."
-            : "SecureNAT is disabled, so no addresses are being handed out."}
+            ? "虚拟 DHCP 服务器分发地址后，租约会随之出现。"
+            : "SecureNAT 已停用，因此不会分发任何地址。"}
         </Empty>
       ) : (
         <div className="card tcard">
           <div className="tscroll">
             <table className="dtable">
               <thead>
-                <tr><th>IP</th><th>MAC</th><th>Hostname</th><th>Leased</th><th>Expires</th></tr>
+                <tr><th>IP</th><th>MAC</th><th>主机名</th><th>租约时间</th><th>过期时间</th></tr>
               </thead>
               <tbody>
                 {dhcp.map((l) => (

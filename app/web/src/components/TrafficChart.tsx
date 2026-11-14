@@ -59,7 +59,7 @@ export function TrafficChart({ usage, emptyLabel }: { usage: Usage; emptyLabel?:
   if (!model) {
     return (
       <div className="chart chart--empty micro" ref={holder}>
-        {emptyLabel ?? "Not enough samples yet — the panel records traffic every few minutes."}
+        {emptyLabel ?? "采样点尚不足 — 面板每隔几分钟记录一次流量。"}
       </div>
     );
   }
@@ -87,11 +87,11 @@ export function TrafficChart({ usage, emptyLabel }: { usage: Usage; emptyLabel?:
     <div className="chart" ref={holder}>
       <div className="chart__legend">
         <span className="chart__key">
-          <i style={{ background: "var(--chart-recv)" }} /> Download
+          <i style={{ background: "var(--chart-recv)" }} /> 下载
           <b className="mono">{formatBytes(usage.total_recv)}</b>
         </span>
         <span className="chart__key">
-          <i style={{ background: "var(--chart-send)" }} /> Upload
+          <i style={{ background: "var(--chart-send)" }} /> 上传
           <b className="mono">{formatBytes(usage.total_send)}</b>
         </span>
         {h && (
@@ -108,7 +108,7 @@ export function TrafficChart({ usage, emptyLabel }: { usage: Usage; emptyLabel?:
         height={H}
         className="chart__svg"
         role="img"
-        aria-label={`Traffic over the last ${usage.hours} hours: ${formatBytes(usage.total_recv)} downloaded, ${formatBytes(usage.total_send)} uploaded.`}
+        aria-label={`最近 ${usage.hours} 小时的流量：下载 ${formatBytes(usage.total_recv)}，上传 ${formatBytes(usage.total_send)}。`}
         onPointerMove={onMove}
         onPointerLeave={() => setHover(null)}
       >
@@ -160,13 +160,13 @@ export function TrafficChart({ usage, emptyLabel }: { usage: Usage; emptyLabel?:
 /** The range picker every usage chart shares. */
 export function RangeSeg({ hours, onChange }: { hours: number; onChange: (h: number) => void }) {
   const options = [
-    { h: 6, label: "6h" },
-    { h: 24, label: "24h" },
-    { h: 24 * 7, label: "7d" },
-    { h: 24 * 30, label: "30d" },
+    { h: 6, label: "6 小时" },
+    { h: 24, label: "24 小时" },
+    { h: 24 * 7, label: "7 天" },
+    { h: 24 * 30, label: "30 天" },
   ];
   return (
-    <div className="seg" role="tablist" aria-label="Time range">
+    <div className="seg" role="tablist" aria-label="时间范围">
       {options.map((o) => (
         <button
           key={o.h}

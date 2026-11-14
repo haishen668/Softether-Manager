@@ -54,7 +54,7 @@ async function request<T = Wire>(method: string, path: string, body?: unknown): 
   }
 
   if (!res.ok) {
-    let detail = `Request failed (${res.status})`;
+    let detail = `请求失败（${res.status}）`;
     let seError = "";
     try {
       const data = await res.json();

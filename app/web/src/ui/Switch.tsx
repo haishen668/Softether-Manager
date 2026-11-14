@@ -52,7 +52,7 @@ export interface Toggle {
 
 const OUTCOME_MS = 6000;
 
-export function useToggle({ value, apply, reload, noun, onWord = "on", offWord = "off", quiet }: ToggleOptions): Toggle {
+export function useToggle({ value, apply, reload, noun, onWord = "开", offWord = "关", quiet }: ToggleOptions): Toggle {
   const [target, setTarget] = useState<boolean | null>(null);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const { push } = useToast();
@@ -103,18 +103,18 @@ export function useToggle({ value, apply, reload, noun, onWord = "on", offWord =
       setTarget(null);
 
       if (error) {
-        const text = fresh !== null && fresh !== wanted ? `${error} — still ${fresh ? onWord : offWord}.` : error;
+        const text = fresh !== null && fresh !== wanted ? `${error} — 仍为${fresh ? onWord : offWord}。` : error;
         setOutcome({ kind: "err", text, at: Date.now() });
-        push("err", `${noun}: ${text}`);
+        push("err", `${noun}：${text}`);
         return false;
       }
       if (fresh !== null && fresh !== wanted) {
-        const text = `The server still reports ${noun} ${fresh ? onWord : offWord}.`;
+        const text = `服务器仍报告 ${noun} 为${fresh ? onWord : offWord}。`;
         setOutcome({ kind: "err", text, at: Date.now() });
         push("err", text);
         return false;
       }
-      const text = `${noun} ${wanted ? onWord : offWord}.`;
+      const text = `${noun}${wanted ? onWord : offWord}。`;
       setOutcome({ kind: "ok", text, at: Date.now() });
       if (!quiet) push("ok", text);
       return true;
@@ -134,8 +134,8 @@ export function Switch({
   disabled,
   onToggle,
   label,
-  onWord = "on",
-  offWord = "off",
+  onWord = "开",
+  offWord = "关",
   word = true,
 }: {
   on: boolean;
@@ -152,7 +152,7 @@ export function Switch({
 }) {
   const busy = Boolean(pending);
   const text = busy
-    ? `turning ${target ?? !on ? onWord : offWord}…`
+    ? `正在切换为${target ?? !on ? onWord : offWord}…`
     : on
       ? onWord
       : offWord;
@@ -163,7 +163,7 @@ export function Switch({
       aria-checked={on}
       aria-busy={busy || undefined}
       aria-label={label}
-      title={busy ? `${label}: ${text}` : `${label}: ${text} — click to turn ${on ? offWord : onWord}`}
+      title={busy ? `${label}：${text}` : `${label}：${text} — 点击切换为${on ? offWord : onWord}`}
       className={`switch${on ? " switch--on" : ""}${busy ? " switch--busy" : ""}`}
       disabled={disabled || busy}
       onClick={(e) => {
@@ -242,7 +242,7 @@ export function SwitchRow({
           target={toggle.target}
           disabled={disabled}
           onToggle={onToggle ?? (() => void toggle.toggle())}
-          label={typeof label === "string" ? label : "Switch"}
+          label={typeof label === "string" ? label : "开关"}
           onWord={onWord}
           offWord={offWord}
         />

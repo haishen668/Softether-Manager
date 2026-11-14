@@ -37,7 +37,7 @@ function CaSection({ hub }: { hub: string }) {
 
   const upload = async (file: File) => {
     const b64 = await fileToBase64(file);
-    await guard(() => api.addCa(hub, b64), "CA certificate added.");
+    await guard(() => api.addCa(hub, b64), "CA 证书已添加。");
     void load();
   };
 
@@ -53,18 +53,18 @@ function CaSection({ hub }: { hub: string }) {
         count={cas?.length}
         actions={
           <label className="btn btn--sm">
-            <IconPlus size={14} /> Add CA
+            <IconPlus size={14} /> 添加 CA
             <input type="file" accept=".cer,.crt,.pem,.der" hidden onChange={(e) => e.target.files?.[0] && void upload(e.target.files[0])} />
           </label>
         }
       >
-        Trusted CA certificates
+        受信 CA 证书
       </SectionTitle>
       {cas === null ? (
         <LoadingBlock />
       ) : cas.length === 0 ? (
-        <Empty title="no trusted CAs">
-          Users authenticating with a signed certificate need the signing CA registered here.
+        <Empty title="暂无受信 CA">
+          使用已签名证书认证的用户，需要其签发 CA 在此处登记。
         </Empty>
       ) : (
         <div className="rows">
@@ -73,17 +73,17 @@ function CaSection({ hub }: { hub: string }) {
               <div className="row__main">
                 <div className="row__name">
                   <IconShield size={15} />
-                  <span className="truncate">{String(c.SubjectName_utf || "certificate")}</span>
+                  <span className="truncate">{String(c.SubjectName_utf || "证书")}</span>
                 </div>
                 <div className="row__note">
-                  issued by {String(c.IssuerName_utf || "?")} · expires {formatDate(c.Expires_dt as string)}
+                  签发者 {String(c.IssuerName_utf || "?")} · 过期于 {formatDate(c.Expires_dt as string)}
                 </div>
               </div>
               <div className="row__side">
-                <button className="btn btn--sm btn--ghost" onClick={() => void download(Number(c.Key_u32))} aria-label="Download">
+                <button className="btn btn--sm btn--ghost" onClick={() => void download(Number(c.Key_u32))} aria-label="下载">
                   <IconDownload size={14} />
                 </button>
-                <button className="btn btn--sm btn--ghost" onClick={() => setDeleting(c)} aria-label="Delete">
+                <button className="btn btn--sm btn--ghost" onClick={() => setDeleting(c)} aria-label="删除">
                   <IconTrash size={14} />
                 </button>
               </div>
@@ -93,9 +93,9 @@ function CaSection({ hub }: { hub: string }) {
       )}
       {deleting && (
         <ConfirmSheet
-          title="Remove this CA?"
-          verb="Remove"
-          body={<>Users whose certificates chain to <b>{String(deleting.SubjectName_utf || "this CA")}</b> will stop authenticating.</>}
+          title="移除该 CA？"
+          verb="移除"
+          body={<>证书链追溯到 <b>{String(deleting.SubjectName_utf || "该 CA")}</b> 的用户将无法再通过认证。</>}
           onClose={() => setDeleting(null)}
           onConfirm={async () => {
             await api.deleteCa(hub, Number(deleting.Key_u32));
@@ -126,25 +126,25 @@ function CrlSection({ hub }: { hub: string }) {
         count={crls?.length}
         actions={
           <button className="btn btn--sm" onClick={() => setAdding(true)}>
-            <IconPlus size={14} /> Revoke a certificate
+            <IconPlus size={14} /> 吊销证书
           </button>
         }
       >
-        Revoked certificates
+        已吊销证书
       </SectionTitle>
       {crls === null ? (
         <LoadingBlock />
       ) : crls.length === 0 ? (
-        <Empty title="nothing revoked">
-          A revocation entry refuses one certificate -- by common name, serial or digest -- even
-          while its CA stays trusted. The lost-laptop switch.
+        <Empty title="暂无吊销">
+          吊销条目可拒绝某一张证书 — 按通用名（CN）、序列号或摘要匹配 — 即使其 CA 仍受信任。
+          笔记本丢失时的一键开关。
         </Empty>
       ) : (
         <div className="rows">
           {crls.map((c) => (
             <div key={String(c.Key_u32)} className="row">
               <div className="row__main">
-                <div className="row__name mono truncate">{String(c.CrlInfo_utf || `entry ${c.Key_u32}`)}</div>
+                <div className="row__name mono truncate">{String(c.CrlInfo_utf || `条目 ${c.Key_u32}`)}</div>
               </div>
               <div className="row__side">
                 <button
@@ -152,8 +152,8 @@ function CrlSection({ hub }: { hub: string }) {
                   onClick={() => void guard(async () => {
                     await api.deleteCrl(hub, Number(c.Key_u32));
                     await load();
-                  }, "Revocation removed.")}
-                  aria-label="Delete"
+                  }, "吊销条目已移除。")}
+                  aria-label="删除"
                 >
                   <IconTrash size={14} />
                 </button>
@@ -198,26 +198,26 @@ function CrlSheet({ onClose, onSave }: { onClose: () => void; onSave: (b: Wire) 
 
   return (
     <Sheet
-      title="Revoke a certificate"
+      title="吊销证书"
       onClose={onClose}
       footer={
         <>
-          <button className="btn" onClick={onClose}>Cancel</button>
+          <button className="btn" onClick={onClose}>取消</button>
           <button className="btn btn--danger" onClick={save} disabled={busy || (!cn.trim() && !serial.trim())}>
-            {busy && <span className="spin" />} Revoke
+            {busy && <span className="spin" />} 吊销
           </button>
         </>
       }
     >
       {error && <ErrorAlert>{error}</ErrorAlert>}
       <div className="lede" style={{ marginBottom: "var(--s3)" }}>
-        A certificate matching <b>every</b> field you fill is refused. One precise field -- the
-        serial -- is usually enough.
+        匹配你所填的<b>每一个</b>字段的证书都会被拒绝。通常只填一个精确字段 —
+        序列号 — 就足够了。
       </div>
-      <Field label="Common name (CN)">
+      <Field label="通用名（CN）">
         <input className="input mono" value={cn} onChange={(e) => setCn(e.target.value)} spellCheck={false} />
       </Field>
-      <Field label="Serial number" hint="Hex, with or without colons.">
+      <Field label="序列号" hint="十六进制，带不带冒号均可。">
         <input className="input mono" value={serial} onChange={(e) => setSerial(e.target.value)} spellCheck={false} placeholder="0a:1b:2c…" />
       </Field>
     </Sheet>
@@ -262,35 +262,34 @@ function RadiusSection({ hub }: { hub: string }) {
       await api.setRadius(hub, body);
       setDirty(false);
       setSecret("");
-    }, "RADIUS settings saved.");
+    }, "RADIUS 设置已保存。");
 
   return (
     <>
-      <SectionTitle>RADIUS authentication</SectionTitle>
+      <SectionTitle>RADIUS 认证</SectionTitle>
       <div className="card" style={{ padding: "var(--s4)", maxWidth: 640 }}>
         <div className="lede" style={{ marginBottom: "var(--s3)" }}>
-          Users set to RADIUS authentication are verified against this server. Empty hostname
-          turns it off.
+          设为 RADIUS 认证的用户将由此服务器验证。主机名留空即为关闭。
         </div>
         <div className="row2">
-          <Field label="Server">
+          <Field label="服务器">
             <input className="input mono" value={String(config.RadiusServerName_str ?? "")} onChange={(e) => set("RadiusServerName_str", e.target.value)} spellCheck={false} placeholder="radius.example.net" />
           </Field>
-          <Field label="Port">
+          <Field label="端口">
             <input className="input mono" type="number" min={1} max={65535} value={Number(config.RadiusPort_u32) || 1812} onChange={(e) => set("RadiusPort_u32", Number(e.target.value))} />
           </Field>
         </div>
         <div className="row2">
-          <Field label="Shared secret" hint="Only sent when you type a new one.">
+          <Field label="共享密钥" hint="仅在你输入新密钥时才会发送。">
             <input className="input" type="password" value={secret} onChange={(e) => { setSecret(e.target.value); setDirty(true); }} autoComplete="off" />
           </Field>
-          <Field label="Retry interval (ms)">
+          <Field label="重试间隔（毫秒）">
             <input className="input mono" type="number" min={100} value={Number(config.RadiusRetryInterval_u32) || 500} onChange={(e) => set("RadiusRetryInterval_u32", Number(e.target.value))} />
           </Field>
         </div>
         {dirty && (
           <button className="btn btn--primary" onClick={() => void save()}>
-            Save RADIUS settings
+            保存 RADIUS 设置
           </button>
         )}
       </div>

@@ -27,14 +27,14 @@ export function UpdateDialog() {
 
   return (
     <Sheet
-      title="Updates"
-      subtitle={`running ${checkInfo.current_version ?? "—"}`}
+      title="更新"
+      subtitle={`当前运行 ${checkInfo.current_version ?? "—"}`}
       onClose={close}
       wide
       footer={
         <>
           <button className="btn" onClick={() => void check()} disabled={isChecking || applying}>
-            {isChecking && <span className="spin" />} Check again
+            {isChecking && <span className="spin" />} 重新检查
           </button>
           <button
             className="btn btn--primary"
@@ -42,7 +42,7 @@ export function UpdateDialog() {
             disabled={!available || !canApply || applying || isStarting}
           >
             {(applying || isStarting) && <span className="spin" />}
-            {applying ? "Updating…" : available ? `Install ${latest.version}` : "Up to date"}
+            {applying ? "更新中…" : available ? `安装 ${latest.version}` : "已是最新"}
           </button>
         </>
       }
@@ -52,14 +52,14 @@ export function UpdateDialog() {
         {startError && <div className="alert alert--err">{startError}</div>}
 
         <div style={{ display: "flex", alignItems: "center", gap: "var(--s2)", flexWrap: "wrap" }}>
-          {stage === "running" && <Pill kind="busy" label="update running" />}
-          {stage === "succeeded" && <Pill kind="ok" label="updated" />}
-          {reloading && <span className="micro">reloading the panel…</span>}
-          {stage === "failed" && <Pill kind="err" label="update failed" />}
-          {available && stage !== "running" && <Pill kind="warn" label={`${latest.version} available`} />}
+          {stage === "running" && <Pill kind="busy" label="正在更新" />}
+          {stage === "succeeded" && <Pill kind="ok" label="已更新" />}
+          {reloading && <span className="micro">正在重新加载面板…</span>}
+          {stage === "failed" && <Pill kind="err" label="更新失败" />}
+          {available && stage !== "running" && <Pill kind="warn" label={`${latest.version} 可用`} />}
           {!available && stage === "idle" && !checkInfo.error && (
             <span className="micro">
-              {checkInfo.checked_at ? "This is the newest release." : "Not checked yet."}
+              {checkInfo.checked_at ? "已是最新版本。" : "尚未检查。"}
             </span>
           )}
         </div>
@@ -77,7 +77,7 @@ export function UpdateDialog() {
               <span>{String(latest.name || latest.version)}</span>
               {latest.url ? (
                 <a href={String(latest.url)} target="_blank" rel="noreferrer">
-                  release page ↗
+                  发布页面 ↗
                 </a>
               ) : null}
             </div>

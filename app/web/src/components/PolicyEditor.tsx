@@ -27,7 +27,7 @@ export function PolicyEditor({
   subject: "user" | "group";
 }) {
   const enabled = Boolean(value.UsePolicy_bool);
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ Access: true, "Bandwidth & sessions": true });
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ "访问": true, "带宽与会话": true });
 
   const set = (key: string, v: unknown) => onChange({ ...value, [key]: v });
 
@@ -43,11 +43,11 @@ export function PolicyEditor({
       <CheckRow
         checked={enabled}
         onChange={(v) => set("UsePolicy_bool", v)}
-        label="Apply a security policy"
+        label="应用安全策略"
         hint={
           subject === "user"
-            ? "Off, this user follows the hub defaults (or their group's policy, if the group has one)."
-            : "Off, members of this group follow the hub defaults."
+            ? "关闭时，该用户沿用虚拟 HUB 默认策略（若所属组设有策略，则沿用组策略）。"
+            : "关闭时，该组成员沿用虚拟 HUB 默认策略。"
         }
       />
 
@@ -57,7 +57,7 @@ export function PolicyEditor({
           if (!fields.length) return null;
           const open = openGroups[groupName] ?? false;
           const activeCount = fields.filter((f) =>
-            f.kind === "bool" ? (groupName === "Access" && f.key === "policy:Access_bool" ? !value[f.key] : Boolean(value[f.key])) : Number(value[f.key]) > 0,
+            f.kind === "bool" ? (groupName === "访问" && f.key === "policy:Access_bool" ? !value[f.key] : Boolean(value[f.key])) : Number(value[f.key]) > 0,
           ).length;
           return (
             <div key={groupName} className="polgroup">
@@ -67,7 +67,7 @@ export function PolicyEditor({
                 aria-expanded={open}
               >
                 <span>{groupName}</span>
-                {activeCount > 0 && <span className="chip chip--brand">{activeCount} set</span>}
+                {activeCount > 0 && <span className="chip chip--brand">已设 {activeCount} 项</span>}
                 <span className={`rail__chev${open ? " open" : ""}`} style={{ marginInlineStart: "auto" }}>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m9 6 6 6-6 6" /></svg>
                 </span>
@@ -94,11 +94,11 @@ export function PolicyEditor({
                         }
                         hint={
                           <>
-                            {f.help} 0 = {f.zero}.
+                            {f.help} 0 = {f.zero}。
                             {(f.key === "policy:MaxUpload_u32" || f.key === "policy:MaxDownload_u32") &&
                               Number(value[f.key]) > 0 && (
                                 <>
-                                  {" "}Currently <b>{formatBytes(Number(value[f.key]))}/s ≈ {((Number(value[f.key]) * 8) / 1_000_000).toFixed(1)} Mbps</b>.
+                                  {" "}当前 <b>{formatBytes(Number(value[f.key]))}/s ≈ {((Number(value[f.key]) * 8) / 1_000_000).toFixed(1)} Mbps</b>。
                                 </>
                               )}
                           </>

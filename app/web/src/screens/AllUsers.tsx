@@ -82,11 +82,11 @@ export function AllUsers() {
   return (
     <div className="page">
       <PageHead
-        title="Users"
-        sub={data ? `${data.users.length} across ${data.hubs.length} hub${data.hubs.length === 1 ? "" : "s"}` : "Every user on this server."}
+        title="用户"
+        sub={data ? `${data.hubs.length} 个虚拟 HUB 共 ${data.users.length} 个用户` : "本服务器上的全部用户。"}
         actions={
           <div style={{ display: "flex", gap: "var(--s2)", flexWrap: "wrap" }}>
-            <SearchBox value={query} onChange={setQuery} placeholder="name, hub, group, note…" />
+            <SearchBox value={query} onChange={setQuery} placeholder="名称、HUB、用户组、备注…" />
             <button
               className="btn btn--primary"
               onClick={() => {
@@ -95,7 +95,7 @@ export function AllUsers() {
               }}
               disabled={!data || data.hubs.length === 0}
             >
-              <IconPlus size={15} /> New user
+              <IconPlus size={15} /> 新建用户
             </button>
           </div>
         }
@@ -103,17 +103,17 @@ export function AllUsers() {
 
       {data?.errors.map((e) => (
         <div key={e.hub} className="alert alert--warn">
-          Hub <b>{e.hub}</b> could not be listed: {e.error}
+          虚拟 HUB <b>{e.hub}</b> 无法列出：{e.error}
         </div>
       ))}
 
       {filtered === null ? (
-        <LoadingBlock label="loading users" />
+        <LoadingBlock label="正在加载用户" />
       ) : filtered.length === 0 ? (
-        <Empty title={query ? "nothing matches" : "no users yet"}>
+        <Empty title={query ? "无匹配结果" : "还没有用户"}>
           {query
-            ? "No user, hub, group or note matches that search."
-            : "A user is one VPN identity, living in one Virtual Hub."}
+            ? "没有匹配该搜索的用户、HUB、用户组或备注。"
+            : "一个用户就是一个 VPN 身份，隶属于一个虚拟 HUB。"}
         </Empty>
       ) : (
         <>
@@ -124,17 +124,17 @@ export function AllUsers() {
                 <table className="dtable">
                   <thead>
                     <tr>
-                      <SortTh sortKey="user" sort={sort} onSort={toggle}>User</SortTh>
-                      <SortTh sortKey="hub" sort={sort} onSort={toggle}>Hub</SortTh>
-                      <SortTh sortKey="status" sort={sort} onSort={toggle} style={{ width: 110 }}>Status</SortTh>
-                      <SortTh sortKey="group" sort={sort} onSort={toggle}>Group</SortTh>
-                      <SortTh sortKey="auth" sort={sort} onSort={toggle}>Auth</SortTh>
-                      <SortTh sortKey="login" sort={sort} onSort={toggle}>Last login</SortTh>
-                      <SortTh sortKey="logins" sort={sort} onSort={toggle} style={{ width: 90 }}>Logins</SortTh>
-                      <SortTh sortKey="transfer" sort={sort} onSort={toggle}>Transfer</SortTh>
-                      <SortTh sortKey="quota" sort={sort} onSort={toggle}>Limit</SortTh>
-                      <SortTh sortKey="expires" sort={sort} onSort={toggle}>Expires</SortTh>
-                      <th className="tact" style={{ width: 96 }} aria-label="Actions" />
+                      <SortTh sortKey="user" sort={sort} onSort={toggle}>用户</SortTh>
+                      <SortTh sortKey="hub" sort={sort} onSort={toggle}>虚拟 HUB</SortTh>
+                      <SortTh sortKey="status" sort={sort} onSort={toggle} style={{ width: 110 }}>状态</SortTh>
+                      <SortTh sortKey="group" sort={sort} onSort={toggle}>用户组</SortTh>
+                      <SortTh sortKey="auth" sort={sort} onSort={toggle}>认证</SortTh>
+                      <SortTh sortKey="login" sort={sort} onSort={toggle}>最近登录</SortTh>
+                      <SortTh sortKey="logins" sort={sort} onSort={toggle} style={{ width: 90 }}>登录次数</SortTh>
+                      <SortTh sortKey="transfer" sort={sort} onSort={toggle}>流量</SortTh>
+                      <SortTh sortKey="quota" sort={sort} onSort={toggle}>限额</SortTh>
+                      <SortTh sortKey="expires" sort={sort} onSort={toggle}>过期</SortTh>
+                      <th className="tact" style={{ width: 96 }} aria-label="操作" />
                     </tr>
                   </thead>
                   <tbody>
@@ -155,12 +155,12 @@ export function AllUsers() {
                           <td className="tmono">{formatCount(Number(u.NumLogin_u32))}</td>
                           <td className="tmono">{formatBytes(bytes.send + bytes.recv)}</td>
                           <td><QuotaCell quota={quotaOf(u)} net={bytes} /></td>
-                          <td className="tmono">{isNever(expires as string) ? "never" : formatDate(expires as string)}</td>
+                          <td className="tmono">{isNever(expires as string) ? "永不" : formatDate(expires as string)}</td>
                           <td className="tact">
                             <button
                               className="btn btn--sm btn--ghost"
-                              title="Download .vpn connection file"
-                              aria-label="Download .vpn connection file"
+                              title="下载 .vpn 连接文件"
+                              aria-label="下载 .vpn 连接文件"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setVpnFor({ hub: String(u.HubName_str), name: String(u.Name_str) });
@@ -193,12 +193,12 @@ export function AllUsers() {
                     </div>
                     <div className="spec">
                       <span className="chip chip--brand">{String(u.HubName_str)}</span>
-                      <span className="chip"><i>group</i>{String(u.GroupName_str || "—")}</span>
-                      <span className="chip"><i>data</i>{formatBytes(bytes.send + bytes.recv)}</span>
-                      <span className="chip"><i>seen</i>{timeAgo(u.LastLoginTime_dt as string)}</span>
+                      <span className="chip"><i>组</i>{String(u.GroupName_str || "—")}</span>
+                      <span className="chip"><i>流量</i>{formatBytes(bytes.send + bytes.recv)}</span>
+                      <span className="chip"><i>活跃</i>{timeAgo(u.LastLoginTime_dt as string)}</span>
                       {quota?.has_limit && (
                         <span className={`chip${quota.blocked ? "" : " chip--brand"}`}>
-                          <i>limit</i>
+                          <i>限额</i>
                           {formatBytes(meteredBytes(bytes, quota.metric))} /{" "}
                           {formatBytes(quota.limit_bytes)}
                         </span>

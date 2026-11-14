@@ -7,35 +7,35 @@
 import type { Wire } from "./api";
 
 export const AUTH_TYPES: Record<number, string> = {
-  0: "Anonymous",
-  1: "Password",
-  2: "User certificate",
-  3: "Signed certificate",
+  0: "匿名",
+  1: "密码",
+  2: "用户证书",
+  3: "已签名证书",
   4: "RADIUS",
-  5: "NT domain",
+  5: "NT 域",
 };
 
 export const AUTH_TYPE_OPTIONS = [
-  { value: 1, label: "Password", hint: "A password stored on the VPN server." },
-  { value: 0, label: "Anonymous", hint: "Anyone naming this user connects. Rarely wise." },
-  { value: 2, label: "User certificate", hint: "A specific X.509 certificate registered on this user." },
-  { value: 3, label: "Signed certificate", hint: "Any certificate signed by a trusted CA of the hub." },
-  { value: 4, label: "RADIUS", hint: "Delegated to the hub's RADIUS server." },
-  { value: 5, label: "NT domain", hint: "Delegated to the Windows domain controller." },
+  { value: 1, label: "密码", hint: "密码保存在 VPN 服务器上。" },
+  { value: 0, label: "匿名", hint: "任何以该用户名连接的人都能登录，通常不建议。" },
+  { value: 2, label: "用户证书", hint: "需在该用户上登记指定的 X.509 证书。" },
+  { value: 3, label: "已签名证书", hint: "任何由虚拟 HUB 受信 CA 签发的证书均可。" },
+  { value: 4, label: "RADIUS", hint: "交由虚拟 HUB 的 RADIUS 服务器验证。" },
+  { value: 5, label: "NT 域", hint: "交由 Windows 域控制器验证。" },
 ];
 
 export const HUB_TYPES: Record<number, string> = {
-  0: "Standalone",
-  1: "Static (cluster)",
-  2: "Dynamic (cluster)",
+  0: "独立",
+  1: "静态（集群）",
+  2: "动态（集群）",
 };
 
 export const SESSION_TYPE = (s: Wire): string => {
-  if (s["LinkMode_bool"]) return "cascade";
+  if (s["LinkMode_bool"]) return "级联";
   if (s["SecureNATMode_bool"]) return "SecureNAT";
-  if (s["BridgeMode_bool"]) return "bridge";
-  if (s["Layer3Mode_bool"]) return "L3 switch";
-  return "client";
+  if (s["BridgeMode_bool"]) return "网桥";
+  if (s["Layer3Mode_bool"]) return "三层交换";
+  return "客户端";
 };
 
 export interface PolicyField {
@@ -50,70 +50,70 @@ export interface PolicyField {
 }
 
 export const POLICY_GROUPS = [
-  "Access",
-  "Bandwidth & sessions",
-  "Address limits",
-  "Filtering",
+  "访问",
+  "带宽与会话",
+  "地址数量限制",
+  "过滤",
   "IPv6",
-  "Advanced",
+  "高级",
 ] as const;
 
 export const POLICY_FIELDS: PolicyField[] = [
   // -- access ------------------------------------------------------------------
-  { key: "policy:Access_bool", label: "Allow access", help: "Master switch: off refuses every connection by this user.", kind: "bool", group: "Access" },
-  { key: "policy:MultiLogins_u32", label: "Concurrent logins", help: "How many sessions this user may hold at once.", kind: "number", zero: "unlimited", group: "Access" },
-  { key: "policy:MaxConnection_u32", label: "TCP connections per session", help: "Parallel TCP carriers a single VPN session may open.", kind: "number", zero: "server default", group: "Access" },
-  { key: "policy:TimeOut_u32", label: "Idle timeout", help: "Disconnect after this many seconds without traffic.", kind: "number", unit: "s", zero: "server default", group: "Access" },
-  { key: "policy:AutoDisconnect_u32", label: "Auto-disconnect", help: "Hard-cut every session after this many seconds, active or not.", kind: "number", unit: "s", zero: "never", group: "Access" },
-  { key: "policy:FixPassword_bool", label: "Forbid password change", help: "The user cannot change their own password from a client.", kind: "bool", group: "Access" },
-  { key: "policy:NoSavePassword_bool", label: "Forbid saving the password", help: "Clients must ask for the password on every connection.", kind: "bool", group: "Access" },
+  { key: "policy:Access_bool", label: "允许访问", help: "总开关：关闭后拒绝该用户的所有连接。", kind: "bool", group: "访问" },
+  { key: "policy:MultiLogins_u32", label: "并发登录数", help: "该用户可同时保持的会话数量。", kind: "number", zero: "不限", group: "访问" },
+  { key: "policy:MaxConnection_u32", label: "每会话 TCP 连接数", help: "单个 VPN 会话可并行建立的 TCP 通道数。", kind: "number", zero: "服务器默认", group: "访问" },
+  { key: "policy:TimeOut_u32", label: "空闲超时", help: "无流量持续该秒数后断开连接。", kind: "number", unit: "s", zero: "服务器默认", group: "访问" },
+  { key: "policy:AutoDisconnect_u32", label: "自动断开", help: "无论是否活跃，会话持续该秒数后强制断开。", kind: "number", unit: "s", zero: "永不", group: "访问" },
+  { key: "policy:FixPassword_bool", label: "禁止修改密码", help: "用户无法从客户端自行修改密码。", kind: "bool", group: "访问" },
+  { key: "policy:NoSavePassword_bool", label: "禁止保存密码", help: "客户端每次连接时都必须重新输入密码。", kind: "bool", group: "访问" },
 
   // -- bandwidth ----------------------------------------------------------------
-  { key: "policy:MaxUpload_u32", label: "Upload limit", help: "Ceiling on traffic from the user into the hub.", kind: "number", unit: "bytes/s", zero: "unlimited", group: "Bandwidth & sessions" },
-  { key: "policy:MaxDownload_u32", label: "Download limit", help: "Ceiling on traffic from the hub to the user.", kind: "number", unit: "bytes/s", zero: "unlimited", group: "Bandwidth & sessions" },
-  { key: "policy:NoQoS_bool", label: "Disable VoIP/QoS priority", help: "Treat all of this user's packets equally.", kind: "bool", group: "Bandwidth & sessions" },
-  { key: "policy:NoBroadcastLimiter_bool", label: "Unlimited broadcasts", help: "Exempt this user from the hub's broadcast-storm limiter.", kind: "bool", group: "Bandwidth & sessions" },
-  { key: "policy:MonitorPort_bool", label: "Monitoring mode", help: "The session may mirror the hub's traffic (a capture port).", kind: "bool", group: "Bandwidth & sessions" },
+  { key: "policy:MaxUpload_u32", label: "上传限速", help: "该用户发往虚拟 HUB 的流量上限。", kind: "number", unit: "bytes/s", zero: "不限", group: "带宽与会话" },
+  { key: "policy:MaxDownload_u32", label: "下载限速", help: "虚拟 HUB 发往该用户的流量上限。", kind: "number", unit: "bytes/s", zero: "不限", group: "带宽与会话" },
+  { key: "policy:NoQoS_bool", label: "停用 VoIP/QoS 优先级", help: "对该用户的所有数据包一视同仁。", kind: "bool", group: "带宽与会话" },
+  { key: "policy:NoBroadcastLimiter_bool", label: "不限广播", help: "该用户不受虚拟 HUB 广播风暴限制的约束。", kind: "bool", group: "带宽与会话" },
+  { key: "policy:MonitorPort_bool", label: "监控模式", help: "该会话可镜像虚拟 HUB 的流量（抓包端口）。", kind: "bool", group: "带宽与会话" },
 
   // -- address limits --------------------------------------------------------------
-  { key: "policy:MaxMac_u32", label: "MAC addresses", help: "How many MAC addresses this session may register.", kind: "number", zero: "unlimited", group: "Address limits" },
-  { key: "policy:MaxIP_u32", label: "IPv4 addresses", help: "How many IPv4 addresses this session may register.", kind: "number", zero: "unlimited", group: "Address limits" },
-  { key: "policy:MaxIPv6_u32", label: "IPv6 addresses", help: "How many IPv6 addresses this session may register.", kind: "number", zero: "unlimited", group: "IPv6" },
-  { key: "policy:CheckMac_bool", label: "Enforce MAC limit", help: "Drop frames from MAC addresses beyond the limit.", kind: "bool", group: "Address limits" },
-  { key: "policy:CheckIP_bool", label: "Enforce IPv4 limit", help: "Drop packets from IPv4 addresses beyond the limit.", kind: "bool", group: "Address limits" },
-  { key: "policy:CheckIPv6_bool", label: "Enforce IPv6 limit", help: "Drop packets from IPv6 addresses beyond the limit.", kind: "bool", group: "IPv6" },
+  { key: "policy:MaxMac_u32", label: "MAC 地址数", help: "该会话可注册的 MAC 地址数量。", kind: "number", zero: "不限", group: "地址数量限制" },
+  { key: "policy:MaxIP_u32", label: "IPv4 地址数", help: "该会话可注册的 IPv4 地址数量。", kind: "number", zero: "不限", group: "地址数量限制" },
+  { key: "policy:MaxIPv6_u32", label: "IPv6 地址数", help: "该会话可注册的 IPv6 地址数量。", kind: "number", zero: "不限", group: "IPv6" },
+  { key: "policy:CheckMac_bool", label: "强制执行 MAC 限制", help: "丢弃超出数量限制的 MAC 地址发来的帧。", kind: "bool", group: "地址数量限制" },
+  { key: "policy:CheckIP_bool", label: "强制执行 IPv4 限制", help: "丢弃超出数量限制的 IPv4 地址发来的包。", kind: "bool", group: "地址数量限制" },
+  { key: "policy:CheckIPv6_bool", label: "强制执行 IPv6 限制", help: "丢弃超出数量限制的 IPv6 地址发来的包。", kind: "bool", group: "IPv6" },
 
   // -- filtering ---------------------------------------------------------------------
-  { key: "policy:DHCPFilter_bool", label: "Filter DHCP (IPv4)", help: "Drop DHCP packets crossing this session.", kind: "bool", group: "Filtering" },
-  { key: "policy:DHCPNoServer_bool", label: "Deny DHCP server role", help: "The user may not answer DHCP requests.", kind: "bool", group: "Filtering" },
-  { key: "policy:DHCPForce_bool", label: "Require DHCP addresses", help: "Only IPv4 addresses handed out by DHCP are accepted.", kind: "bool", group: "Filtering" },
-  { key: "policy:NoBridge_bool", label: "Deny bridging", help: "Frames from other MAC addresses behind the client are dropped.", kind: "bool", group: "Filtering" },
-  { key: "policy:NoRouting_bool", label: "Deny routing (IPv4)", help: "The user may not act as an IPv4 router.", kind: "bool", group: "Filtering" },
-  { key: "policy:NoServer_bool", label: "Deny server role (IPv4)", help: "Inbound TCP connections to the user are blocked.", kind: "bool", group: "Filtering" },
-  { key: "policy:PrivacyFilter_bool", label: "Privacy filter", help: "No traffic between users who both carry this policy.", kind: "bool", group: "Filtering" },
-  { key: "policy:ArpDhcpOnly_bool", label: "Broadcasts: ARP/DHCP/ICMPv6 only", help: "Every other broadcast is dropped.", kind: "bool", group: "Filtering" },
-  { key: "policy:FilterIPv4_bool", label: "Drop all IPv4", help: "IPv4 packets do not pass this session.", kind: "bool", group: "Filtering" },
-  { key: "policy:FilterIPv6_bool", label: "Drop all IPv6", help: "IPv6 packets do not pass this session.", kind: "bool", group: "IPv6" },
-  { key: "policy:FilterNonIP_bool", label: "Drop non-IP frames", help: "Anything that is not IPv4/IPv6/ARP is dropped.", kind: "bool", group: "Filtering" },
+  { key: "policy:DHCPFilter_bool", label: "过滤 DHCP（IPv4）", help: "丢弃穿过该会话的 DHCP 数据包。", kind: "bool", group: "过滤" },
+  { key: "policy:DHCPNoServer_bool", label: "禁止充当 DHCP 服务器", help: "该用户不得响应 DHCP 请求。", kind: "bool", group: "过滤" },
+  { key: "policy:DHCPForce_bool", label: "仅允许 DHCP 分配的地址", help: "只接受由 DHCP 分配的 IPv4 地址。", kind: "bool", group: "过滤" },
+  { key: "policy:NoBridge_bool", label: "禁止网桥", help: "丢弃来自客户端后面其他 MAC 地址的帧。", kind: "bool", group: "过滤" },
+  { key: "policy:NoRouting_bool", label: "禁止路由（IPv4）", help: "该用户不得充当 IPv4 路由器。", kind: "bool", group: "过滤" },
+  { key: "policy:NoServer_bool", label: "禁止充当服务器（IPv4）", help: "阻止发往该用户的入站 TCP 连接。", kind: "bool", group: "过滤" },
+  { key: "policy:PrivacyFilter_bool", label: "隐私过滤", help: "同带此策略的用户之间不能互访。", kind: "bool", group: "过滤" },
+  { key: "policy:ArpDhcpOnly_bool", label: "仅允许 ARP/DHCP/ICMPv6 广播", help: "丢弃其他所有广播。", kind: "bool", group: "过滤" },
+  { key: "policy:FilterIPv4_bool", label: "丢弃所有 IPv4", help: "IPv4 数据包不能穿过该会话。", kind: "bool", group: "过滤" },
+  { key: "policy:FilterIPv6_bool", label: "丢弃所有 IPv6", help: "IPv6 数据包不能穿过该会话。", kind: "bool", group: "IPv6" },
+  { key: "policy:FilterNonIP_bool", label: "丢弃非 IP 帧", help: "丢弃所有非 IPv4/IPv6/ARP 的帧。", kind: "bool", group: "过滤" },
 
   // -- IPv6 ----------------------------------------------------------------------------
-  { key: "policy:RSandRAFilter_bool", label: "Filter RS/RA", help: "Drop IPv6 router solicitations and advertisements.", kind: "bool", group: "IPv6" },
-  { key: "policy:RAFilter_bool", label: "Filter RA", help: "Drop IPv6 router advertisements only.", kind: "bool", group: "IPv6" },
-  { key: "policy:DHCPv6Filter_bool", label: "Filter DHCPv6", help: "Drop DHCPv6 packets crossing this session.", kind: "bool", group: "IPv6" },
-  { key: "policy:DHCPv6NoServer_bool", label: "Deny DHCPv6 server role", help: "The user may not answer DHCPv6 requests.", kind: "bool", group: "IPv6" },
-  { key: "policy:NoRoutingV6_bool", label: "Deny routing (IPv6)", help: "The user may not act as an IPv6 router.", kind: "bool", group: "IPv6" },
-  { key: "policy:NoServerV6_bool", label: "Deny server role (IPv6)", help: "Inbound IPv6 connections to the user are blocked.", kind: "bool", group: "IPv6" },
-  { key: "policy:NoIPv6DefaultRouterInRA_bool", label: "Strip default router from RA", help: "Router advertisements pass with the default-route bit cleared.", kind: "bool", group: "IPv6" },
-  { key: "policy:NoIPv6DefaultRouterInRAWhenIPv6_bool", label: "Strip RA default router (IPv6 tunnels)", help: "Same, but only for physical IPv6 VPN connections.", kind: "bool", group: "IPv6" },
+  { key: "policy:RSandRAFilter_bool", label: "过滤 RS/RA", help: "丢弃 IPv6 路由器请求与通告。", kind: "bool", group: "IPv6" },
+  { key: "policy:RAFilter_bool", label: "过滤 RA", help: "仅丢弃 IPv6 路由器通告。", kind: "bool", group: "IPv6" },
+  { key: "policy:DHCPv6Filter_bool", label: "过滤 DHCPv6", help: "丢弃穿过该会话的 DHCPv6 数据包。", kind: "bool", group: "IPv6" },
+  { key: "policy:DHCPv6NoServer_bool", label: "禁止充当 DHCPv6 服务器", help: "该用户不得响应 DHCPv6 请求。", kind: "bool", group: "IPv6" },
+  { key: "policy:NoRoutingV6_bool", label: "禁止路由（IPv6）", help: "该用户不得充当 IPv6 路由器。", kind: "bool", group: "IPv6" },
+  { key: "policy:NoServerV6_bool", label: "禁止充当服务器（IPv6）", help: "阻止发往该用户的入站 IPv6 连接。", kind: "bool", group: "IPv6" },
+  { key: "policy:NoIPv6DefaultRouterInRA_bool", label: "从 RA 中去除默认路由", help: "路由器通告照常通过，但默认路由位被清除。", kind: "bool", group: "IPv6" },
+  { key: "policy:NoIPv6DefaultRouterInRAWhenIPv6_bool", label: "从 RA 中去除默认路由（IPv6 隧道）", help: "同上，但仅针对物理 IPv6 VPN 连接。", kind: "bool", group: "IPv6" },
 
   // -- advanced ---------------------------------------------------------------------------
-  { key: "policy:VLanId_u32", label: "VLAN ID", help: "Tag this user's traffic onto one VLAN.", kind: "number", zero: "none", group: "Advanced" },
-  { key: "policy:Ver3_bool", label: "Version-3 policy", help: "Enables the newer policy fields above on old servers.", kind: "bool", group: "Advanced" },
+  { key: "policy:VLanId_u32", label: "VLAN ID", help: "将该用户的流量标记到指定 VLAN。", kind: "number", zero: "无", group: "高级" },
+  { key: "policy:Ver3_bool", label: "版本 3 策略", help: "在旧服务器上启用上述较新的策略字段。", kind: "bool", group: "高级" },
 ];
 
 /** Access-list rule fields, in the order a person reads a firewall rule. */
 export const ACCESS_PROTOCOLS: Record<number, string> = {
-  0: "any",
+  0: "任意",
   1: "ICMPv4",
   6: "TCP",
   17: "UDP",

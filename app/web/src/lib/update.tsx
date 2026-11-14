@@ -91,7 +91,7 @@ export function UpdateProvider({ children }: { children: ReactNode }) {
       // While an update is running the panel is expected to disappear for a
       // while; that is the update working, not failing.
       if (!applyingRef.current) {
-        setError(err instanceof ApiError ? err.message : "The panel could not be reached");
+        setError(err instanceof ApiError ? err.message : "无法连接到面板");
       }
     }
   }, []);
@@ -139,7 +139,7 @@ export function UpdateProvider({ children }: { children: ReactNode }) {
       setStatus({ check: checkResult, state });
       setError(null);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "The check could not be run");
+      setError(err instanceof ApiError ? err.message : "无法执行检查");
     } finally {
       setChecking(false);
     }
@@ -152,7 +152,7 @@ export function UpdateProvider({ children }: { children: ReactNode }) {
       const state = await api.updateApply(version);
       setStatus((s) => ({ check: s?.check ?? {}, state }));
     } catch (err) {
-      setStartError(err instanceof ApiError ? err.message : "The update could not be started");
+      setStartError(err instanceof ApiError ? err.message : "无法启动更新");
     } finally {
       setStarting(false);
     }
@@ -173,8 +173,8 @@ export function UpdateProvider({ children }: { children: ReactNode }) {
     const version = String(status.check.latest?.version ?? "");
     if (!version || announcedVersion === version) return;
     announcedVersion = version;
-    push("info", `Version ${version} is available.`, {
-      action: { label: "Update", run: open },
+    push("info", `新版本 ${version} 可用。`, {
+      action: { label: "更新", run: open },
       duration: 12000,
     });
   }, [status, user, applying, push, open]);

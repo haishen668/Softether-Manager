@@ -57,15 +57,15 @@ export function Terminal({
       <div className="term__head">
         <span className="mono">{label}</span>
         <span className="mono">
-          {lines.length.toLocaleString()} {lines.length === 1 ? "line" : "lines"}
-          {live && " · live"}
+          {lines.length.toLocaleString()} 行
+          {live && " · 实时"}
         </span>
       </div>
       <div className="term__body" ref={body} onScroll={onScroll}>
         {lines.length === 0 && (
           <div className="term__ln term__ln--mgr">
             <span className="term__g">»</span>
-            <span>waiting for output…</span>
+            <span>等待输出…</span>
           </div>
         )}
         {lines.map((l, i) => {
@@ -81,7 +81,7 @@ export function Terminal({
       </div>
       {!stick && (
         <button className="term__stick" onClick={() => setStick(true)}>
-          jump to latest
+          跳到最新
         </button>
       )}
     </div>

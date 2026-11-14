@@ -21,23 +21,23 @@ export function formatCount(n: number | undefined | null): string {
   return String(n);
 }
 
-/** "3d 4h", "2h 05m", "45s" — from seconds. */
+/** "3 天 4 小时", "2 小时 05 分", "45 秒" — from seconds. */
 export function formatDuration(seconds: number): string {
   if (!isFinite(seconds) || seconds < 0) return "—";
   const d = Math.floor(seconds / 86400);
   const h = Math.floor((seconds % 86400) / 3600);
   const m = Math.floor((seconds % 3600) / 60);
-  if (d > 0) return `${d}d ${h}h`;
-  if (h > 0) return `${h}h ${String(m).padStart(2, "0")}m`;
-  if (m > 0) return `${m}m ${String(Math.floor(seconds % 60)).padStart(2, "0")}s`;
-  return `${Math.floor(seconds)}s`;
+  if (d > 0) return `${d} 天 ${h} 小时`;
+  if (h > 0) return `${h} 小时 ${String(m).padStart(2, "0")} 分`;
+  if (m > 0) return `${m} 分 ${String(Math.floor(seconds % 60)).padStart(2, "0")} 秒`;
+  return `${Math.floor(seconds)} 秒`;
 }
 
 /** SoftEther's zero dates mean "never"; render them as such. */
 export function formatDate(iso: string | null | undefined): string {
-  if (!iso) return "never";
+  if (!iso) return "从未";
   const d = new Date(iso);
-  if (!isFinite(d.getTime()) || d.getFullYear() < 1990) return "never";
+  if (!isFinite(d.getTime()) || d.getFullYear() < 1990) return "从未";
   return d.toLocaleString(undefined, {
     year: "numeric",
     month: "short",
@@ -48,14 +48,14 @@ export function formatDate(iso: string | null | undefined): string {
 }
 
 export function timeAgo(iso: string | null | undefined): string {
-  if (!iso) return "never";
+  if (!iso) return "从未";
   const then = new Date(iso).getTime();
-  if (!isFinite(then) || new Date(iso).getFullYear() < 1990) return "never";
+  if (!isFinite(then) || new Date(iso).getFullYear() < 1990) return "从未";
   const s = Math.max(0, (Date.now() - then) / 1000);
-  if (s < 60) return "just now";
-  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
-  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
-  return `${Math.floor(s / 86400)}d ago`;
+  if (s < 60) return "刚刚";
+  if (s < 3600) return `${Math.floor(s / 60)} 分钟前`;
+  if (s < 86400) return `${Math.floor(s / 3600)} 小时前`;
+  return `${Math.floor(s / 86400)} 天前`;
 }
 
 export function classNames(...parts: (string | false | null | undefined)[]): string {

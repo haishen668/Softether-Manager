@@ -31,26 +31,26 @@ export function HubGroups({ hub }: { hub: string }) {
         count={groups?.length}
         actions={
           <button className="btn btn--primary btn--sm" onClick={() => setCreating(true)}>
-            <IconPlus size={14} /> New group
+            <IconPlus size={14} /> 新建用户组
           </button>
         }
       >
-        Groups
+        用户组
       </SectionTitle>
 
       {groups === null ? (
-        <LoadingBlock label="loading groups" />
+        <LoadingBlock label="正在加载用户组" />
       ) : groups.length === 0 ? (
         <Empty
-          title="no groups"
+          title="暂无用户组"
           action={
             <button className="btn btn--primary" onClick={() => setCreating(true)}>
-              <IconPlus size={15} /> Create a group
+              <IconPlus size={15} /> 创建用户组
             </button>
           }
         >
-          A group carries one security policy for many users: bandwidth tiers, an access cut-off
-          for a whole team, one switch instead of fifty.
+          一个用户组为多个用户承载同一份安全策略：带宽分级、整个团队的访问截止，
+          一个开关代替五十个。
         </Empty>
       ) : (
         <div className="grid hubgrid">
@@ -62,7 +62,7 @@ export function HubGroups({ hub }: { hub: string }) {
               </div>
               {g.Realname_utf ? <div className="micro truncate">{String(g.Realname_utf)}</div> : null}
               <div className="hubtile__stats">
-                <span className="stat"><span className="stat__n">{formatCount(Number(g.NumUsers_u32))}</span><span className="micro">members</span></span>
+                <span className="stat"><span className="stat__n">{formatCount(Number(g.NumUsers_u32))}</span><span className="micro">成员</span></span>
               </div>
             </button>
           ))}
@@ -91,9 +91,9 @@ export function HubGroups({ hub }: { hub: string }) {
       )}
       {deleting && (
         <ConfirmSheet
-          title={`Delete group ${deleting}?`}
-          verb="Delete group"
-          body={<>Members are not deleted; they simply stop belonging to any group.</>}
+          title={`删除用户组 ${deleting}？`}
+          verb="删除用户组"
+          body={<>成员不会被删除；只是不再属于任何用户组。</>}
           onClose={() => setDeleting(null)}
           onConfirm={async () => {
             await api.deleteGroup(hub, deleting);
@@ -157,7 +157,7 @@ function GroupSheet({ hub,
         body.Name_str = groupName.trim();
         await api.createGroup(hub, body);
       }
-      push("ok", editing ? "Group saved." : `Group ${groupName.trim()} created.`);
+      push("ok", editing ? "用户组已保存。" : `用户组 ${groupName.trim()} 已创建。`);
       onSaved();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -168,21 +168,21 @@ function GroupSheet({ hub,
 
   return (
     <Sheet
-      title={editing ? `Group ${name}` : "New group"}
-      subtitle={`hub ${hub}`}
+      title={editing ? `用户组 ${name}` : "新建用户组"}
+      subtitle={`虚拟 HUB ${hub}`}
       onClose={onClose}
       wide
       footer={
         <>
           {editing && (
             <button className="btn btn--danger" onClick={() => onDelete(name as string)} style={{ marginInlineEnd: "auto" }}>
-              Delete
+              删除
             </button>
           )}
-          <button className="btn" onClick={onClose}>Cancel</button>
+          <button className="btn" onClick={onClose}>取消</button>
           <button className="btn btn--primary" onClick={save} disabled={busy || (!editing && !groupName.trim()) || !loaded}>
             {busy && <span className="spin" />}
-            {editing ? "Save" : "Create group"}
+            {editing ? "保存" : "创建用户组"}
           </button>
         </>
       }
@@ -193,16 +193,16 @@ function GroupSheet({ hub,
       ) : (
         <div style={{ display: "grid", gap: "var(--s1)" }}>
           {!editing && (
-            <Field label="Group name">
+            <Field label="用户组名称">
               <input className="input mono" value={groupName} onChange={(e) => setGroupName(e.target.value)}
                 autoFocus autoCapitalize="none" spellCheck={false} />
             </Field>
           )}
           <div className="row2">
-            <Field label="Display name">
+            <Field label="显示名称">
               <input className="input" value={realname} onChange={(e) => setRealname(e.target.value)} />
             </Field>
-            <Field label="Note">
+            <Field label="备注">
               <input className="input" value={note} onChange={(e) => setNote(e.target.value)} />
             </Field>
           </div>

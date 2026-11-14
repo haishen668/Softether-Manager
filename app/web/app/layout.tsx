@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "../src/styles.css";
 
 export const metadata: Metadata = {
-  title: "SoftEther Manager",
-  description: "Management panel for SoftEther VPN servers.",
+  title: "SoftEther 管理器",
+  description: "SoftEther VPN 服务器管理面板。",
 };
 
 export const viewport: Viewport = {
@@ -43,7 +43,7 @@ document.documentElement.classList.remove("preload")})});
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="zh-CN" suppressHydrationWarning>
       <head>
         <meta name="color-scheme" content="dark light" />
         <meta name="mobile-web-app-capable" content="yes" />

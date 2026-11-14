@@ -42,7 +42,7 @@ export function Connect() {
     setTestResult(null);
     try {
       const r = await api.testConnection({ host, port, password });
-      setTestResult(`${r.version} answered on ${host}:${port}.`);
+      setTestResult(`${r.version} 已在 ${host}:${port} 应答。`);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -59,7 +59,7 @@ export function Connect() {
         port,
         password: password || (configured ? null : ""),
       });
-      push("ok", "Connected.");
+      push("ok", "已连接。");
       await refresh();
       navigate("/");
     } catch (e) {
@@ -72,8 +72,8 @@ export function Connect() {
   return (
     <div className="page">
       <PageHead
-        title="Connect to SoftEther"
-        sub="The management port and administrator password of the instance on this machine."
+        title="连接 SoftEther"
+        sub="本机 SoftEther 实例的管理端口和管理员密码。"
       />
       <div className="card" style={{ padding: "var(--s5)", maxWidth: 560 }}>
         {error && <ErrorAlert>{error}</ErrorAlert>}
@@ -83,32 +83,31 @@ export function Connect() {
           </div>
         )}
         <div className="row2">
-          <Field label="Host" hint="127.0.0.1 unless SoftEther deliberately lives elsewhere.">
+          <Field label="主机" hint="默认 127.0.0.1，除非 SoftEther 刻意部署在别处。">
             <input className="input mono" value={host} onChange={(e) => setHost(e.target.value)}
               autoCapitalize="none" spellCheck={false} inputMode="url" />
           </Field>
-          <Field label="Management port" hint="5555 on a stock install; 443 and 992 also answer.">
+          <Field label="管理端口" hint="默认安装为 5555；443 和 992 也可应答。">
             <input className="input mono" type="number" min={1} max={65535} value={port}
               onChange={(e) => setPort(Number(e.target.value))} inputMode="numeric" />
           </Field>
         </div>
         <Field
-          label={configured ? "Administrator password (empty keeps the stored one)" : "Administrator password"}
+          label={configured ? "管理员密码（留空保持已保存的密码）" : "管理员密码"}
         >
           <input className="input" type="password" value={password}
             onChange={(e) => setPassword(e.target.value)} autoComplete="off" />
         </Field>
         <div style={{ display: "flex", gap: "var(--s2)", marginTop: "var(--s2)" }}>
           <button className="btn" onClick={test} disabled={busy !== null || (!password && !configured)}>
-            {busy === "test" && <span className="spin" />} Test
+            {busy === "test" && <span className="spin" />} 测试
           </button>
           <button className="btn btn--primary" onClick={save} disabled={busy !== null || (!password && !configured)}>
-            {busy === "save" && <span className="spin" />} Save & connect
+            {busy === "save" && <span className="spin" />} 保存并连接
           </button>
         </div>
         <p className="hint" style={{ marginTop: "var(--s3)" }}>
-          No SoftEther on this machine yet? Install it first — the panel manages an existing
-          instance; it does not install one.
+          本机还没有安装 SoftEther？请先安装 — 面板只管理已有实例，不会代为安装。
         </p>
       </div>
     </div>

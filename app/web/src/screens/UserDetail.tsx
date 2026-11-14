@@ -38,7 +38,7 @@ function CombinedSessionChart({ usage }: { usage: Wire }) {
   if (!values.some((v) => v > 0)) {
     return (
       <p className="micro">
-        Nothing moved during this session, or it was shorter than one sampling interval.
+        该会话期间没有流量，或其时长不足一个采样间隔。
       </p>
     );
   }
@@ -46,14 +46,13 @@ function CombinedSessionChart({ usage }: { usage: Wire }) {
     <div style={{ display: "grid", gap: "var(--s2)" }}>
       <div className="chart__legend">
         <span className="chart__key">
-          <i style={{ background: "var(--chart-recv)" }} /> Traffic
+          <i style={{ background: "var(--chart-recv)" }} /> 流量
           <b className="mono">{formatBytes(Number(usage.total_combined) || 0)}</b>
         </span>
       </div>
       <Spark values={values} color="var(--chart-recv)" />
       <p className="micro">
-        This session reports no split between download and upload, so this is the total it moved
-        over its life, sampled every interval.
+        该会话不区分上传与下载，因此这里显示的是其整个生命周期内按采样间隔累计的总流量。
       </p>
     </div>
   );
@@ -81,32 +80,32 @@ function SessionUsageSheet({ hub, row, onClose }: { hub: string; row: Wire; onCl
 
   return (
     <Sheet
-      title="Session"
+      title="会话"
       subtitle={`${row.username} · ${formatDate(String(row.started_date))}`}
       onClose={onClose}
       wide
-      footer={<button className="btn" onClick={onClose}>Close</button>}
+      footer={<button className="btn" onClick={onClose}>关闭</button>}
     >
       <div style={{ display: "grid", gap: "var(--s3)" }}>
         <KV
           rows={[
-            ["client IP", String(row.client_ip || "—")],
-            ["client host", String(row.client_hostname || "—")],
-            ["started", formatDate(String(row.started_date))],
-            ["ended", row.ended_date ? formatDate(String(row.ended_date)) : "still connected"],
-            ["duration", formatDuration(duration)],
-            ["downloaded", formatBytes(Number(row.download_bytes))],
-            ["uploaded", formatBytes(Number(row.upload_bytes))],
+            ["客户端 IP", String(row.client_ip || "—")],
+            ["客户端主机", String(row.client_hostname || "—")],
+            ["开始时间", formatDate(String(row.started_date))],
+            ["结束时间", row.ended_date ? formatDate(String(row.ended_date)) : "仍在线"],
+            ["时长", formatDuration(duration)],
+            ["已下载", formatBytes(Number(row.download_bytes))],
+            ["已上传", formatBytes(Number(row.upload_bytes))],
           ]}
         />
         {error && <div className="alert alert--err">{error}</div>}
         {!usage && !error ? (
-          <LoadingBlock label="loading this session's traffic" />
+          <LoadingBlock label="正在加载该会话的流量" />
         ) : usage ? (
           usage.split_available ? (
             <TrafficChart
               usage={usage}
-              emptyLabel="This session was shorter than one sampling interval, so there is no curve to draw — the totals above are what it moved."
+              emptyLabel="该会话时长不足一个采样间隔，因此没有可绘制的曲线 — 上方的总量就是它传输的流量。"
             />
           ) : (
             <CombinedSessionChart usage={usage} />
@@ -188,7 +187,7 @@ export function UserDetail({ hub, name }: { hub: string; name: string }) {
       body[k] = v;
     }
     Object.assign(body, policy);
-    const ok = await guard(() => api.setUser(hub, name, body), "Policy saved.");
+    const ok = await guard(() => api.setUser(hub, name, body), "策略已保存。");
     setSavingPolicy(false);
     if (ok) {
       setPolicyDirty(false);
@@ -199,7 +198,7 @@ export function UserDetail({ hub, name }: { hub: string; name: string }) {
   if (!user) {
     return (
       <div className="page">
-        <LoadingBlock label={`loading ${name}`} />
+        <LoadingBlock label={`正在加载 ${name}`} />
       </div>
     );
   }
@@ -214,18 +213,18 @@ export function UserDetail({ hub, name }: { hub: string; name: string }) {
         title={<span className="mono">{name}</span>}
         sub={
           <>
-            <Link to={`/hub/${seg(hub)}/users`} className="linkish">← users</Link>
-            {" "}· hub <span className="mono">{hub}</span>
+            <Link to={`/hub/${seg(hub)}/users`} className="linkish">← 用户</Link>
+            {" "}· 虚拟 HUB <span className="mono">{hub}</span>
           </>
         }
         actions={
           <>
             <button className="btn btn--primary" onClick={() => setDownloading(true)}>
-              <IconDownload size={15} /> Download .vpn
+              <IconDownload size={15} /> 下载 .vpn
             </button>
-            <button className="btn" onClick={() => setEditing(true)}>Edit profile</button>
+            <button className="btn" onClick={() => setEditing(true)}>编辑资料</button>
             <button className="btn btn--danger" onClick={() => setDeleting(true)}>
-              <IconTrash size={14} /> Delete
+              <IconTrash size={14} /> 删除
             </button>
           </>
         }
@@ -242,27 +241,27 @@ export function UserDetail({ hub, name }: { hub: string; name: string }) {
           <div className="idcard__name mono">{name}</div>
           {user.Realname_utf ? <div className="idcard__real">{String(user.Realname_utf)}</div> : null}
           <div className="idcard__meta">
-            <span className="chip"><i>auth</i>{AUTH_TYPES[Number(user.AuthType_u32)] ?? "?"}</span>
-            <span className="chip"><i>group</i>{String(user.GroupName_str || "—")}</span>
-            <span className="chip"><i>expires</i>{isNever(user.ExpireTime_dt as string) ? "never" : formatDate(user.ExpireTime_dt as string)}</span>
+            <span className="chip"><i>认证</i>{AUTH_TYPES[Number(user.AuthType_u32)] ?? "?"}</span>
+            <span className="chip"><i>用户组</i>{String(user.GroupName_str || "—")}</span>
+            <span className="chip"><i>过期</i>{isNever(user.ExpireTime_dt as string) ? "永不" : formatDate(user.ExpireTime_dt as string)}</span>
           </div>
           <div className="idcard__foot">
-            <div className="stat"><span className="stat__n">{formatCount(Number(user.NumLogin_u32))}</span><span className="micro">logins</span></div>
-            <div className="stat"><span className="stat__n">{formatBytes(bytes.recv)}</span><span className="micro">downloaded</span></div>
-            <div className="stat"><span className="stat__n">{formatBytes(bytes.send)}</span><span className="micro">uploaded</span></div>
-            <div className="stat"><span className="stat__n">{sessions?.length ?? 0}</span><span className="micro">online now</span></div>
+            <div className="stat"><span className="stat__n">{formatCount(Number(user.NumLogin_u32))}</span><span className="micro">登录次数</span></div>
+            <div className="stat"><span className="stat__n">{formatBytes(bytes.recv)}</span><span className="micro">已下载</span></div>
+            <div className="stat"><span className="stat__n">{formatBytes(bytes.send)}</span><span className="micro">已上传</span></div>
+            <div className="stat"><span className="stat__n">{sessions?.length ?? 0}</span><span className="micro">当前在线</span></div>
           </div>
         </div>
 
         <div className="card" style={{ padding: "var(--s4)" }}>
           <KV
             rows={[
-              ["created", formatDate(user.CreatedTime_dt as string)],
-              ["updated", formatDate(user.UpdatedTime_dt as string)],
-              ["note", String(user.Note_utf || "—")],
-              ...(Number(user.AuthType_u32) === 3 && user.CommonName_utf ? [["required CN", String(user.CommonName_utf)] as [string, string]] : []),
-              ...(Number(user.AuthType_u32) === 4 ? [["RADIUS user", String(user.RadiusUsername_utf || name)] as [string, string]] : []),
-              ...(Number(user.AuthType_u32) === 5 ? [["NT user", String(user.NtUsername_utf || name)] as [string, string]] : []),
+              ["创建时间", formatDate(user.CreatedTime_dt as string)],
+              ["更新时间", formatDate(user.UpdatedTime_dt as string)],
+              ["备注", String(user.Note_utf || "—")],
+              ...(Number(user.AuthType_u32) === 3 && user.CommonName_utf ? [["所需 CN", String(user.CommonName_utf)] as [string, string]] : []),
+              ...(Number(user.AuthType_u32) === 4 ? [["RADIUS 用户", String(user.RadiusUsername_utf || name)] as [string, string]] : []),
+              ...(Number(user.AuthType_u32) === 5 ? [["NT 用户", String(user.NtUsername_utf || name)] as [string, string]] : []),
             ]}
           />
         </div>
@@ -272,10 +271,10 @@ export function UserDetail({ hub, name }: { hub: string; name: string }) {
         <>
           <SectionTitle
             actions={
-              <button className="btn btn--sm" onClick={() => setEditing(true)}>Change</button>
+              <button className="btn btn--sm" onClick={() => setEditing(true)}>修改</button>
             }
           >
-            Traffic limit
+            流量限额
           </SectionTitle>
           <div className="card" style={{ padding: "var(--s4)", maxWidth: 640 }}>
             <QuotaEnforceSwitch quota={quota} subject="user" onChanged={setQuota} />
@@ -284,24 +283,24 @@ export function UserDetail({ hub, name }: { hub: string; name: string }) {
         </>
       )}
 
-      <SectionTitle actions={<RangeSeg hours={hours} onChange={setHours} />}>Usage</SectionTitle>
+      <SectionTitle actions={<RangeSeg hours={hours} onChange={setHours} />}>用量</SectionTitle>
       <div className="card" style={{ padding: "var(--s4)" }}>
         {usage ? (
           <TrafficChart
             usage={usage}
-            emptyLabel="No samples in this window — usage builds up as the panel's sampler runs."
+            emptyLabel="此时间窗内暂无采样 — 用量会随着面板采样器的运行逐渐积累。"
           />
         ) : (
-          <LoadingBlock label="loading usage" />
+          <LoadingBlock label="正在加载用量" />
         )}
       </div>
 
-      <SectionTitle count={sessions?.length}>Live sessions</SectionTitle>
+      <SectionTitle count={sessions?.length}>在线会话</SectionTitle>
       {sessions === null ? (
         <LoadingBlock />
       ) : sessions.length === 0 ? (
-        <Empty title="not connected right now">
-          Sessions appear here the moment this user connects, and can be cut from here too.
+        <Empty title="当前未连接">
+          该用户一旦连接，会话会立即出现在这里，也可以从这里切断。
         </Empty>
       ) : (
         <SessionsTable
@@ -311,18 +310,18 @@ export function UserDetail({ hub, name }: { hub: string; name: string }) {
             guard(async () => {
               await api.killSession(hub, String(s.Name_str));
               await load();
-            }, "Session disconnected.")
+            }, "会话已断开。")
           }
         />
       )}
 
-      <SectionTitle count={history?.length}>Session history</SectionTitle>
+      <SectionTitle count={history?.length}>会话历史</SectionTitle>
       {history === null ? (
         <LoadingBlock />
       ) : history.length === 0 ? (
-        <Empty title="no logins recorded yet">
-          Every connection this user makes lands here — client IP, when it started and ended,
-          and the bytes it moved — kept for the retention window set in Settings.
+        <Empty title="尚无登录记录">
+          该用户的每次连接都会记录在这里 — 客户端 IP、起止时间以及传输的字节数 —
+          保留时长取决于设置中的保留窗口。
         </Empty>
       ) : (
         <div className="card tcard">
@@ -330,12 +329,12 @@ export function UserDetail({ hub, name }: { hub: string; name: string }) {
             <table className="dtable">
               <thead>
                 <tr>
-                  <th>Started</th>
-                  <th>Ended</th>
-                  <th>Duration</th>
-                  <th>Client IP</th>
-                  <th>Host</th>
-                  <th>Transferred</th>
+                  <th>开始时间</th>
+                  <th>结束时间</th>
+                  <th>时长</th>
+                  <th>客户端 IP</th>
+                  <th>主机</th>
+                  <th>传输量</th>
                 </tr>
               </thead>
               <tbody>
@@ -346,7 +345,7 @@ export function UserDetail({ hub, name }: { hub: string; name: string }) {
                   return (
                     <tr key={String(h.id)} className="clickable" onClick={() => setOpenHistory(h)}>
                       <td className="tmono">{formatDate(String(h.started_date))}</td>
-                      <td className="tmono">{h.ended_date ? formatDate(String(h.ended_date)) : <Pill kind="ok" label="connected" />}</td>
+                      <td className="tmono">{h.ended_date ? formatDate(String(h.ended_date)) : <Pill kind="ok" label="在线" />}</td>
                       <td className="tmono">{formatDuration(duration)}</td>
                       <td className="tmono">{String(h.client_ip || "—")}</td>
                       <td className="tmono truncate" style={{ maxWidth: 160 }}>{String(h.client_hostname || "—")}</td>
@@ -363,14 +362,14 @@ export function UserDetail({ hub, name }: { hub: string; name: string }) {
             shown={shownHistory.length}
             loaded={history.length}
             exhausted={historyExhausted}
-            noun="logins"
+            noun="条记录"
             onReveal={revealHistory}
             onLoad={() => loadHistory(Number(history[history.length - 1].id))}
           />
         </div>
       )}
 
-      <SectionTitle>Security policy</SectionTitle>
+      <SectionTitle>安全策略</SectionTitle>
       <div className="card" style={{ padding: "var(--s4)", maxWidth: 720 }}>
         {policy && (
           <>
@@ -385,7 +384,7 @@ export function UserDetail({ hub, name }: { hub: string; name: string }) {
             {policyDirty && (
               <div style={{ display: "flex", gap: "var(--s2)", marginTop: "var(--s3)" }}>
                 <button className="btn btn--primary" onClick={savePolicy} disabled={savingPolicy}>
-                  {savingPolicy && <span className="spin" />} Save policy
+                  {savingPolicy && <span className="spin" />} 保存策略
                 </button>
                 <button
                   className="btn"
@@ -394,7 +393,7 @@ export function UserDetail({ hub, name }: { hub: string; name: string }) {
                     setPolicyDirty(false);
                   }}
                 >
-                  Discard
+                  放弃更改
                 </button>
               </div>
             )}
@@ -419,19 +418,18 @@ export function UserDetail({ hub, name }: { hub: string; name: string }) {
       )}
       {deleting && (
         <ConfirmSheet
-          title={`Delete ${name}?`}
-          verb="Delete user"
+          title={`删除 ${name}？`}
+          verb="删除用户"
           typed={name}
           body={
             <>
-              The user is removed from hub <b>{hub}</b> and any live session it has is cut. This
-              cannot be undone.
+              该用户将从虚拟 HUB <b>{hub}</b> 中移除，其所有在线会话也会被切断。此操作无法撤销。
             </>
           }
           onClose={() => setDeleting(false)}
           onConfirm={async () => {
             await api.deleteUser(hub, name);
-            push("ok", `${name} deleted.`);
+            push("ok", `${name} 已删除。`);
             navigate(`/hub/${seg(hub)}/users`);
           }}
         />

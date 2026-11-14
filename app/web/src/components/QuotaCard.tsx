@@ -28,18 +28,18 @@ import { SwitchRow, useToggle } from "../ui/Switch";
  */
 
 export const METRIC_OPTIONS: { value: QuotaMetric; label: string; hint: string }[] = [
-  { value: "total", label: "Both", hint: "Download and upload added together." },
-  { value: "download", label: "Download", hint: "Only what the subject pulls down." },
-  { value: "upload", label: "Upload", hint: "Only what the subject pushes up." },
+  { value: "total", label: "双向", hint: "下载与上传之和。" },
+  { value: "download", label: "下载", hint: "仅统计下载流量。" },
+  { value: "upload", label: "上传", hint: "仅统计上传流量。" },
 ];
 
 const UNITS: QuotaUnit[] = ["MB", "GB", "TB"];
 
 /** What the metric is called in a sentence. */
 export const METRIC_WORD: Record<QuotaMetric, string> = {
-  total: "download + upload",
-  download: "download",
-  upload: "upload",
+  total: "下载 + 上传",
+  download: "下载",
+  upload: "上传",
 };
 
 /** A pair of raw or net byte counters, in the panel's own words. */
@@ -106,7 +106,7 @@ export function QuotaMeter({ quota, used }: { quota: Quota; used?: number }) {
       aria-valuenow={Math.round(percent)}
       aria-valuemin={0}
       aria-valuemax={100}
-      aria-label={`${formatBytes(spent)} of ${formatBytes(quota.limit_bytes)} used`}
+      aria-label={`已用 ${formatBytes(spent)} / ${formatBytes(quota.limit_bytes)}`}
     >
       <div
         className="meter__fill"
@@ -158,7 +158,7 @@ export function draftOf(quota: Quota | null): QuotaDraft {
 export function draftAmount(draft: QuotaDraft): number {
   const amount = Number(draft.limit);
   if (!isFinite(amount) || amount <= 0) {
-    throw new Error("Give the traffic limit a number greater than zero.");
+    throw new Error("请为流量限额填写一个大于零的数字。");
   }
   return amount;
 }
@@ -203,7 +203,7 @@ export function QuotaFields({
   const set = (patch: Partial<QuotaDraft>) => onChange({ ...draft, ...patch });
   return (
     <div className="row2">
-      <Field label="Limit" hint="How much may move before the ceiling bites.">
+      <Field label="限额" hint="达到上限前允许的流量。">
         <div className="qsplit">
           <input
             className="input mono"
@@ -216,7 +216,7 @@ export function QuotaFields({
           />
           <select
             className="select"
-            aria-label="Unit"
+            aria-label="单位"
             value={draft.unit}
             onChange={(e) => set({ unit: e.target.value as QuotaUnit })}
           >
@@ -226,8 +226,8 @@ export function QuotaFields({
           </select>
         </div>
       </Field>
-      <Field label="Counts" hint={METRIC_OPTIONS.find((m) => m.value === draft.metric)?.hint}>
-        <div className="seg" role="radiogroup" aria-label="What the limit counts">
+      <Field label="统计方式" hint={METRIC_OPTIONS.find((m) => m.value === draft.metric)?.hint}>
+        <div className="seg" role="radiogroup" aria-label="限额统计方式">
           {METRIC_OPTIONS.map((m) => (
             <button
               key={m.value}
@@ -270,45 +270,42 @@ export function QuotaSummary({
         <span className="quota__used mono">{formatBytes(used)}</span>
         <span className="quota__of micro">
           {quota.has_limit
-            ? `of ${formatBytes(quota.limit_bytes)} ${METRIC_WORD[quota.metric]}`
-            : "moved — no ceiling set"}
+            ? `共 ${formatBytes(quota.limit_bytes)}（${METRIC_WORD[quota.metric]}）`
+            : "已用流量 — 未设上限"}
         </span>
         {/* Worst state first. "spent" without a block means the ceiling was
             crossed but the cut-off has not landed yet -- the tick is due, or it
             could not reach the server -- which is worth saying rather than
             showing the same pill as a block that took. */}
         {!quota.has_limit ? null : quota.blocked ? (
-          <Pill kind="err" label={subject === "hub" ? "offline — over limit" : "cut off — over limit"} />
+          <Pill kind="err" label={subject === "hub" ? "已离线 — 超出限额" : "已断开 — 超出限额"} />
         ) : !quota.enabled ? (
-          <Pill kind="idle" label="not enforced" />
+          <Pill kind="idle" label="未强制执行" />
         ) : percent >= 100 ? (
-          <Pill kind="busy" label="spent — cutting off" />
+          <Pill kind="busy" label="已用尽 — 正在断开" />
         ) : percent >= 80 ? (
-          <Pill kind="warn" label="nearly spent" />
+          <Pill kind="warn" label="即将用尽" />
         ) : (
-          <Pill kind="ok" label="within limit" />
+          <Pill kind="ok" label="限额内" />
         )}
       </div>
       {quota.has_limit && <QuotaMeter quota={quota} used={used} />}
       <div className="quota__facts">
-        <span className="chip"><i>↓ down</i>{formatBytes(moved.recv)}</span>
-        <span className="chip"><i>↑ up</i>{formatBytes(moved.send)}</span>
-        {left != null && <span className="chip"><i>left</i>{formatBytes(left)}</span>}
-        <span className="chip"><i>counting since</i>{formatDate(quota.cycle_start)}</span>
+        <span className="chip"><i>↓ 下载</i>{formatBytes(moved.recv)}</span>
+        <span className="chip"><i>↑ 上传</i>{formatBytes(moved.send)}</span>
+        {left != null && <span className="chip"><i>剩余</i>{formatBytes(left)}</span>}
+        <span className="chip"><i>起算时间</i>{formatDate(quota.cycle_start)}</span>
       </div>
       {quota.blocked && (
         <div className="alert alert--warn">
           {subject === "hub" ? (
             <>
-              This hub was taken offline when the limit was reached, and every session in it was
-              dropped. Raise the limit or reset the transfer to bring it back — the panel puts it
-              online again by itself.
+              该虚拟 HUB 在达到限额时已离线，其中所有会话均被断开。提高限额或重置流量即可恢复 —
+              面板会自动将其重新上线。
             </>
           ) : (
             <>
-              Access for this config was denied when the limit was reached, and its sessions were
-              cut. Raise the limit or reset the transfer and the panel restores exactly the policy
-              it found.
+              该账号在达到限额时已被拒绝访问，其会话也已被断开。提高限额或重置流量后，面板会原样恢复其原有的安全策略。
             </>
           )}
         </div>
@@ -347,15 +344,15 @@ export function UserQuotaBlock({
   const transfer = moved ? moved.send + moved.recv : 0;
   return (
     <>
-      <div className="tpl__group">Traffic limit</div>
+      <div className="tpl__group">流量限额</div>
       <CheckRow
         checked={draft.on}
         onChange={(v) => set({ on: v })}
-        label="Limit how much this config may move"
+        label="限制该账号的流量"
         hint={
           moved
-            ? `Measured against the transfer the panel shows for this config — ${formatBytes(transfer)} right now — so a limit applies to what it has already used, not only to what it uses next.`
-            : "Measured against the transfer the panel shows for this config, so a limit applies to what it has already used, not only to what it uses next."
+            ? `以面板显示的该账号流量为基准（当前为 ${formatBytes(transfer)}），因此限额会计入已用的流量，而不只是之后的流量。`
+            : "以面板显示的该账号流量为基准，因此限额会计入已用的流量，而不只是之后的流量。"
         }
       />
       {draft.on && (
@@ -365,8 +362,8 @@ export function UserQuotaBlock({
           <CheckRow
             checked={draft.enforce}
             onChange={(v) => set({ enforce: v })}
-            label="Enforce this limit"
-            hint="Off, the transfer still counts and the meter still fills, but nothing is ever cut off — useful for watching what a config would use before committing to a ceiling."
+            label="强制执行此限额"
+            hint="关闭后仍会统计流量并填充进度条，但不会切断任何连接 — 适合在正式设限前观察账号的用量。"
           />
         </>
       )}
@@ -374,14 +371,13 @@ export function UserQuotaBlock({
         <CheckRow
           checked={draft.reset}
           onChange={(v) => set({ reset: v })}
-          label={`Reset this config's transfer to zero (now ${formatBytes(transfer)})`}
-          hint="SoftEther counts forever and cannot be told to stop, so the panel keeps its own zero and every figure subtracts it. Saving with this ticked moves that zero to today: the Transfer column and any limit start again together."
+          label={`将该账号流量清零（当前 ${formatBytes(transfer)}）`}
+          hint="SoftEther 会永久累计且无法清零，因此面板自行维护基准值并从每个数字中扣除。勾选后保存会把基准移到今天：流量列和限额都会重新开始计算。"
         />
       )}
       {!draft.on && quota?.blocked && (
         <div className="alert alert--warn">
-          This config is cut off by its limit right now. Saving with the limit removed restores its
-          access.
+          该账号当前已被限额切断。保存时移除限额即可恢复其访问。
         </div>
       )}
     </>
@@ -429,11 +425,11 @@ export function QuotaStatePill({ quota, net }: { quota: Quota | undefined | null
   if (!quota?.has_limit) return null;
   const moved: Bytes = net ?? { send: quota.upload_bytes, recv: quota.download_bytes };
   const percent = Math.round(percentOf(meteredBytes(moved, quota.metric), quota.limit_bytes));
-  const title = `${formatBytes(meteredBytes(moved, quota.metric))} of ${formatBytes(quota.limit_bytes)} ${METRIC_WORD[quota.metric]}`;
-  if (quota.blocked) return <span title={title}><Pill kind="err" label="over limit" /></span>;
-  if (!quota.enabled) return <span title={title}><Pill kind="idle" label={`limit off · ${percent}%`} /></span>;
-  if (percent >= 100) return <span title={title}><Pill kind="busy" label="limit spent" /></span>;
-  return <span title={title}><Pill kind={percent >= 80 ? "warn" : "ok"} label={`limit ${percent}%`} /></span>;
+  const title = `${formatBytes(meteredBytes(moved, quota.metric))} / 共 ${formatBytes(quota.limit_bytes)}（${METRIC_WORD[quota.metric]}）`;
+  if (quota.blocked) return <span title={title}><Pill kind="err" label="超出限额" /></span>;
+  if (!quota.enabled) return <span title={title}><Pill kind="idle" label={`限额停用 · ${percent}%`} /></span>;
+  if (percent >= 100) return <span title={title}><Pill kind="busy" label="限额已用尽" /></span>;
+  return <span title={title}><Pill kind={percent >= 80 ? "warn" : "ok"} label={`限额 ${percent}%`} /></span>;
 }
 
 /**
@@ -451,7 +447,7 @@ export function QuotaEnforceSwitch({
   /** Called with the quota as the server reports it after the switch. */
   onChanged: (next: Quota) => void;
 }) {
-  const noun = subject === "hub" ? "The hub's traffic limit" : "The config's traffic limit";
+  const noun = subject === "hub" ? "虚拟 HUB 的流量限额" : "该账号的流量限额";
   const read = async () =>
     subject === "hub" ? api.hubQuota(quota.hub) : api.userQuota(quota.hub, quota.username);
   const toggle = useToggle({
@@ -474,30 +470,30 @@ export function QuotaEnforceSwitch({
       }
     },
     noun,
-    onWord: "enforced",
-    offWord: "not enforced",
+    onWord: "已强制",
+    offWord: "未强制",
   });
   return (
     <SwitchRow
-      label="Enforce this limit"
+      label="强制执行此限额"
       hint={
         quota.enabled
           ? subject === "hub"
-            ? "Armed: reaching the ceiling takes the hub offline until the limit is raised or the transfer reset."
-            : "Armed: reaching the ceiling denies this config access and cuts its sessions."
-          : "Off: the transfer still counts and the meter still fills, but nothing is ever cut off. Turning it back on re-applies the ceiling at once."
+            ? "已启用：达到上限后虚拟 HUB 将离线，直到提高限额或重置流量。"
+            : "已启用：达到上限后该账号将被拒绝访问，其会话也会被断开。"
+          : "关闭后仍会统计流量并填充进度条，但不会切断任何连接。重新开启后会立即恢复上限约束。"
       }
       status={
         quota.blocked ? (
-          <Pill kind="err" label={subject === "hub" ? "hub offline" : "cut off"} />
+          <Pill kind="err" label={subject === "hub" ? "HUB 已离线" : "已断开"} />
         ) : (
-          <Pill kind={quota.enabled ? "ok" : "idle"} label={quota.enabled ? "enforced" : "not enforced"} />
+          <Pill kind={quota.enabled ? "ok" : "idle"} label={quota.enabled ? "已强制" : "未强制"} />
         )
       }
       toggle={toggle}
       on={quota.enabled}
-      onWord="enforced"
-      offWord="off"
+      onWord="已强制"
+      offWord="关闭"
     />
   );
 }
@@ -511,14 +507,14 @@ export function QuotaCell({ quota, net }: { quota: Quota | undefined; net?: Byte
   return (
     <span
       className="qcell"
-      title={`${METRIC_WORD[quota.metric]} · ${formatBytes(used)} of ${formatBytes(quota.limit_bytes)}`}
+      title={`${METRIC_WORD[quota.metric]} · 已用 ${formatBytes(used)} / 共 ${formatBytes(quota.limit_bytes)}`}
     >
       <span className="qcell__t mono">
         {formatBytes(used)}
         <span className="muted"> / {formatBytes(quota.limit_bytes)}</span>
       </span>
       <QuotaMeter quota={quota} used={used} />
-      {quota.blocked ? <Pill kind="err" label="over" /> : !quota.enabled ? <Pill kind="idle" label="off" /> : null}
+      {quota.blocked ? <Pill kind="err" label="超限" /> : !quota.enabled ? <Pill kind="idle" label="停用" /> : null}
     </span>
   );
 }
@@ -598,7 +594,7 @@ export function QuotaCard({ hub, onChanged }: { hub: string; onChanged?: () => v
           enabled: quota?.has_limit ? quota.enabled : draft.enforce,
         }),
       );
-    }, "Traffic limit saved.");
+    }, "流量限额已保存。");
     setSaving(false);
     if (ok) onChanged?.();
   };
@@ -607,7 +603,7 @@ export function QuotaCard({ hub, onChanged }: { hub: string; onChanged?: () => v
     guard(async () => {
       adopt(await api.resetHubTransfer(hub));
       onChanged?.();
-    }, "Transfer reset — the hub counts from zero again.");
+    }, "流量已重置 — 虚拟 HUB 将从零重新计数。");
 
   const remove = () =>
     guard(async () => {
@@ -615,7 +611,7 @@ export function QuotaCard({ hub, onChanged }: { hub: string; onChanged?: () => v
       adopt(null);
       setRemoving(false);
       onChanged?.();
-    }, "Traffic limit removed.");
+    }, "流量限额已移除。");
 
   if (!loaded) return null;
 
@@ -626,9 +622,8 @@ export function QuotaCard({ hub, onChanged }: { hub: string; onChanged?: () => v
         <QuotaSummary quota={quota} subject="hub" />
       ) : (
         <p className="lede" style={{ marginBottom: "var(--s3)" }}>
-          No traffic limit on this hub. Set one and the panel counts what moves — from
-          SoftEther&rsquo;s own counters, so it survives a restart — and takes the hub offline the
-          moment the ceiling is reached.
+          该虚拟 HUB 尚未设置流量限额。设置后，面板会基于 SoftEther
+          自身的计数器统计流量（重启后依然有效），并在达到上限的一刻让虚拟 HUB 离线。
         </p>
       )}
 
@@ -638,24 +633,24 @@ export function QuotaCard({ hub, onChanged }: { hub: string; onChanged?: () => v
         <CheckRow
           checked={draft.enforce}
           onChange={(v) => change({ ...draft, enforce: v })}
-          label="Enforce this limit from the start"
-          hint="Off, the counter runs and the meter fills, but the hub is never taken offline — useful for watching what it would use before committing to a ceiling. It can be switched either way afterwards."
+          label="从一开始就强制执行此限额"
+          hint="关闭后仍会继续计数并填充进度条，但虚拟 HUB 永远不会离线 — 适合在正式设限前观察用量。之后可随时切换。"
         />
       )}
 
       <div style={{ display: "flex", gap: "var(--s2)", flexWrap: "wrap", marginTop: "var(--s3)" }}>
         {(dirty || !quota?.has_limit) && (
           <button className="btn btn--primary" onClick={() => void save()} disabled={saving}>
-            {saving && <span className="spin" />} {quota?.has_limit ? "Save limit" : "Set the limit"}
+            {saving && <span className="spin" />} {quota?.has_limit ? "保存限额" : "设置限额"}
           </button>
         )}
-        {dirty && quota?.has_limit && <button className="btn" onClick={() => adopt(quota)}>Discard</button>}
+        {dirty && quota?.has_limit && <button className="btn" onClick={() => adopt(quota)}>放弃更改</button>}
         {quota && !dirty && (
           <>
-            <button className="btn" onClick={() => void reset()}>Reset transfer</button>
+            <button className="btn" onClick={() => void reset()}>重置流量</button>
             {quota.has_limit && (
               <button className="btn btn--ghost" onClick={() => setRemoving(true)}>
-                <IconTrash size={14} /> Remove limit
+                <IconTrash size={14} /> 移除限额
               </button>
             )}
           </>
@@ -664,22 +659,21 @@ export function QuotaCard({ hub, onChanged }: { hub: string; onChanged?: () => v
 
       {removing && (
         <Sheet
-          title="Remove the traffic limit?"
+          title="移除流量限额？"
           subtitle={hub}
           onClose={() => setRemoving(false)}
           footer={
             <>
-              <button className="btn" onClick={() => setRemoving(false)}>Keep it</button>
-              <button className="btn btn--danger" onClick={() => void remove()}>Remove limit</button>
+              <button className="btn" onClick={() => setRemoving(false)}>保留</button>
+              <button className="btn btn--danger" onClick={() => void remove()}>移除限额</button>
             </>
           }
         >
           <p className="lede">
-            The ceiling and everything counted against it are dropped.
+            上限及已统计的用量记录将被丢弃。
             {quota?.blocked && (
               <>
-                {" "}Because this hub is offline <b>because of</b> the limit, removing it also brings
-                the hub back online.
+                {" "}由于该虚拟 HUB <b>因限额</b>而离线，移除限额后会自动将其重新上线。
               </>
             )}
           </p>

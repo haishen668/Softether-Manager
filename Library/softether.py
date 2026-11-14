@@ -2672,7 +2672,11 @@ class SoftEtherClient:
             token = base64.b64encode(("%s:%s" % (self.hub, self.password)).encode("utf-8"))
             headers["Authorization"] = "Basic " + token.decode("ascii")
         else:
-            headers["X-VPNADMIN-HUBNAME"] = self.hub
+            # SoftEther 5.2's HTTP parser closes the connection when it
+            # receives an empty-value header; omit HUBNAME entirely for
+            # server-admin sessions (hub == "").
+            if self.hub:
+                headers["X-VPNADMIN-HUBNAME"] = self.hub
             headers["X-VPNADMIN-PASSWORD"] = self.password
         return headers
 

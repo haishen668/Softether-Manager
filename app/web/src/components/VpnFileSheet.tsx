@@ -108,7 +108,7 @@ export function VpnFileSheet({
         filename: filename.trim() || undefined,
       });
       downloadText(r.filename, r.content);
-      push("ok", `${r.filename} downloaded.`);
+      push("ok", `${r.filename} 已下载。`);
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -119,15 +119,15 @@ export function VpnFileSheet({
 
   return (
     <Sheet
-      title="Download connection file"
-      subtitle={`${name} · hub ${hub}`}
+      title="下载连接文件"
+      subtitle={`${name} · 虚拟 HUB ${hub}`}
       onClose={onClose}
       footer={
         <>
-          <button className="btn" onClick={onClose}>Cancel</button>
+          <button className="btn" onClick={onClose}>取消</button>
           <button className="btn btn--primary" onClick={download} disabled={busy || !host.trim() || !port}>
             {busy ? <span className="spin" /> : <IconDownload size={15} />}
-            Download .vpn
+            下载 .vpn
           </button>
         </>
       }
@@ -135,21 +135,21 @@ export function VpnFileSheet({
       <div style={{ display: "grid", gap: "var(--s1)" }}>
         {error && <ErrorAlert>{error}</ErrorAlert>}
         <div className="lede" style={{ marginBottom: "var(--s2)" }}>
-          The file imports straight into SoftEther VPN Client — one double-click and the
-          connection exists, pointed at this server and signed in as <b className="mono">{name}</b>.
+          该文件可直接导入 SoftEther VPN Client — 双击即可创建连接，指向本服务器并以
+          <b className="mono">{name}</b> 身份登录。
         </div>
         <Field
-          label="Server address"
+          label="服务器地址"
           hint={
             ddnsFqdn ? (
               <>
-                What the client will dial.{" "}
+                客户端将拨叫的地址。{" "}
                 <button className="linkish" onClick={() => setHost(ddnsFqdn)} type="button">
-                  Use the DDNS name ({ddnsFqdn})
+                  使用 DDNS 名称（{ddnsFqdn}）
                 </button>
               </>
             ) : (
-              "What the client will dial — this machine's public address."
+              "客户端将拨叫的地址 — 本机的公网地址。"
             )
           }
         >
@@ -163,7 +163,7 @@ export function VpnFileSheet({
             inputMode="url"
           />
         </Field>
-        <Field label="Port" hint="Any listening SoftEther port; 443 crosses the most networks.">
+        <Field label="端口" hint="任意 SoftEther 监听端口；443 在大多数网络中都能通行。">
           {customPort ? (
             <input
               className="input mono"
@@ -186,12 +186,12 @@ export function VpnFileSheet({
               {portChoices.map((p) => (
                 <option key={p} value={p}>{p}</option>
               ))}
-              <option value="custom">other…</option>
+              <option value="custom">其他…</option>
             </select>
           )}
         </Field>
         <div className="row2">
-          <Field label="File name">
+          <Field label="文件名">
             <input
               className="input mono"
               value={filename}
@@ -202,7 +202,7 @@ export function VpnFileSheet({
               spellCheck={false}
             />
           </Field>
-          <Field label="Connection name in the client">
+          <Field label="客户端中的连接名称">
             <input
               className="input mono"
               value={accountName}
@@ -217,19 +217,19 @@ export function VpnFileSheet({
         <CheckRow
           checked={embed}
           onChange={setEmbed}
-          label="Embed the password in the file"
+          label="在文件中内嵌密码"
           hint={
             credential === null
-              ? "Checking whether the panel holds this user's credential…"
+              ? "正在检查面板是否持有该用户的凭据…"
               : credential.available
-                ? "The panel holds this user's credential — it goes in as SoftEther's own hash, no typing needed. Anyone holding the file can connect."
-                : "The panel has not seen this user's password and could not recover it from the server — type it once below and it will be remembered."
+                ? "面板持有该用户的凭据 — 会以 SoftEther 自身的哈希形式写入，无需输入。任何持有该文件的人都可以连接。"
+                : "面板没有该用户的密码，也无法从服务器恢复 — 请在下方输入一次，之后会记住它。"
           }
         />
         {embed && (
           <Field
-            label={credential?.available ? "Password (only to replace the stored one)" : "Password"}
-            hint="Stored hashed, the way the client stores it — never in plain text."
+            label={credential?.available ? "密码（仅用于替换已保存的密码）" : "密码"}
+            hint="以哈希形式保存，与客户端的保存方式一致 — 绝不以明文存储。"
           >
             <input
               className="input"
@@ -241,7 +241,7 @@ export function VpnFileSheet({
           </Field>
         )}
         {needsPassword && (
-          <p className="hint hint--err">Without the password the download will be refused — or untick embedding to ship the file without a credential.</p>
+          <p className="hint hint--err">没有密码将被拒绝下载 — 或取消勾选内嵌，导出不含凭据的文件。</p>
         )}
       </div>
     </Sheet>

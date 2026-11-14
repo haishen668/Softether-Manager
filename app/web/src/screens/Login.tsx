@@ -26,7 +26,7 @@ export function Login() {
     e.preventDefault();
     setError(null);
     if (needsSetup && password !== confirm) {
-      setError("The two passwords do not match");
+      setError("两次输入的密码不一致");
       return;
     }
     setBusy(true);
@@ -34,7 +34,7 @@ export function Login() {
       if (needsSetup) await setup(username.trim(), password);
       else await login(username.trim(), password);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong");
+      setError(err instanceof ApiError ? err.message : "出了点问题");
     } finally {
       setBusy(false);
     }
@@ -46,11 +46,11 @@ export function Login() {
         <div className="auth__mark">
           <BrandMark size={38} />
           <div>
-            <div className="auth__t">{needsSetup ? "Set up this panel" : "SoftEther Manager"}</div>
+            <div className="auth__t">{needsSetup ? "初始化面板" : "SoftEther 管理器"}</div>
             <div className="auth__s">
               {needsSetup
-                ? "No account exists yet. The first one you create signs in from now on."
-                : "Sign in to manage your VPN servers"}
+                ? "尚无账号。你创建的第一个账号今后用于登录。"
+                : "登录以管理你的 VPN 服务器"}
             </div>
           </div>
         </div>
@@ -59,7 +59,7 @@ export function Login() {
           {error && <div className="alert alert--err">{error}</div>}
           <form onSubmit={submit}>
             <div className="field">
-              <label htmlFor="u">Username</label>
+              <label htmlFor="u">用户名</label>
               <input
                 id="u"
                 className="input mono"
@@ -76,7 +76,7 @@ export function Login() {
               />
             </div>
             <div className="field">
-              <label htmlFor="p">Password</label>
+              <label htmlFor="p">密码</label>
               <input
                 id="p"
                 className="input"
@@ -91,7 +91,7 @@ export function Login() {
             </div>
             {needsSetup && (
               <div className="field">
-                <label htmlFor="p2">Confirm password</label>
+                <label htmlFor="p2">确认密码</label>
                 <input
                   id="p2"
                   className="input"
@@ -107,7 +107,7 @@ export function Login() {
             )}
             <button className="btn btn--primary btn--block" disabled={busy} type="submit">
               {busy && <span className="spin" />}
-              {needsSetup ? "Create account" : "Sign in"}
+              {needsSetup ? "创建账号" : "登录"}
             </button>
           </form>
         </div>

@@ -46,7 +46,7 @@ export function SectionTitle({ children, count, actions }: { children: ReactNode
   );
 }
 
-export function LoadingBlock({ label = "loading" }: { label?: string }) {
+export function LoadingBlock({ label = "加载中" }: { label?: string }) {
   return (
     <div className="loading">
       <span className="spin" /> {label}
@@ -126,9 +126,9 @@ export function SearchBox({ value, onChange, placeholder }: { value: string; onC
 
 export function RefreshButton({ onClick, busy }: { onClick: () => void; busy?: boolean }) {
   return (
-    <button className="btn btn--sm" onClick={onClick} disabled={busy} title="Refresh">
+    <button className="btn btn--sm" onClick={onClick} disabled={busy} title="刷新">
       {busy ? <span className="spin" /> : <IconRefresh size={14} />}
-      Refresh
+      刷新
     </button>
   );
 }
@@ -174,7 +174,7 @@ export function ConfirmSheet({
       footer={
         <>
           <button className="btn" onClick={onClose}>
-            Cancel
+            取消
           </button>
           <button className={`btn ${danger ? "btn--danger" : "btn--primary"}`} disabled={!armed || busy} onClick={go}>
             {busy && <span className="spin" />}
@@ -186,7 +186,7 @@ export function ConfirmSheet({
       <div style={{ display: "grid", gap: "var(--s3)" }}>
         <div className="lede">{body}</div>
         {typed && (
-          <Field label={<>Type <span className="mono">{typed}</span> to confirm</>}>
+          <Field label={<>输入 <span className="mono">{typed}</span> 以确认</>}>
             <input
               className="input mono"
               value={text}
@@ -252,11 +252,11 @@ export function MoreRows({
   return (
     <div className="morebar">
       <span className="micro">
-        {shown} of {loaded}
+        已显示 {shown} / {loaded}
         {exhausted ? "" : "+"} {noun}
       </span>
       <button className="btn btn--sm" onClick={() => void click()} disabled={busy}>
-        {busy && <span className="spin" />} Show more
+        {busy && <span className="spin" />} 显示更多
       </button>
     </div>
   );

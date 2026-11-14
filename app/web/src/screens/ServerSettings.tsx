@@ -28,7 +28,7 @@ export function ServerSettings({ section }: { section?: string }) {
 
   return (
     <div className="page">
-      <PageHead title="Server settings" sub={<Link to="/" className="linkish">← dashboard</Link>} />
+      <PageHead title="服务器设置" sub={<Link to="/" className="linkish">← 仪表盘</Link>} />
       <div className="setdoc">
         <ListenersCard />
         <ProtocolsCard />
@@ -69,11 +69,11 @@ function ListenersCard() {
         count={listeners?.length}
         actions={
           <button className="btn btn--sm" onClick={() => setAdding(true)}>
-            <IconPlus size={14} /> Add port
+            <IconPlus size={14} /> 添加端口
           </button>
         }
       >
-        TCP listeners
+        TCP 监听
       </SectionTitle>
       <div className="card" style={{ padding: "var(--s3) var(--s4)" }}>
         {listeners === null ? (
@@ -83,9 +83,9 @@ function ListenersCard() {
             <div key={String(l.Ports_u32)} className="lrow">
               <span className="mono" style={{ fontSize: "var(--t-data)", fontWeight: 600 }}>{String(l.Ports_u32)}</span>
               {l.Errors_bool ? (
-                <span title="The port is enabled but could not be opened — something else holds it."><Pill kind="err" label="cannot open" /></span>
+                <span title="该端口已启用但无法打开 — 被其他程序占用。"><Pill kind="err" label="无法打开" /></span>
               ) : (
-                <OnlinePill online={Boolean(l.Enables_bool)} onLabel="listening" offLabel="disabled" />
+                <OnlinePill online={Boolean(l.Enables_bool)} onLabel="监听中" offLabel="已停用" />
               )}
               <span style={{ flex: 1 }} />
               <ListenerSwitch listener={l} reload={load} />
@@ -94,8 +94,8 @@ function ListenersCard() {
                 onClick={() => void guard(async () => {
                   await api.deleteListener(Number(l.Ports_u32));
                   await load();
-                }, `Listener ${l.Ports_u32} deleted.`)}
-                aria-label="Delete listener"
+                }, `监听端口 ${l.Ports_u32} 已删除。`)}
+                aria-label="删除监听端口"
               >
                 <IconTrash size={14} />
               </button>
@@ -108,14 +108,14 @@ function ListenersCard() {
               special={special}
               field="VpnOverIcmpListener_bool"
               label="VPN over ICMP"
-              hint="Clients tunnel in ping packets — crosses networks that allow nothing else."
+              hint="客户端把流量封装在 ping 包中 — 可穿过几乎什么都不放行的网络。"
               onFresh={setSpecial}
             />
             <SpecialListenerSwitch
               special={special}
               field="VpnOverDnsListener_bool"
               label="VPN over DNS"
-              hint="Tunnels in DNS queries on UDP 53. Slow, and a last resort."
+              hint="封装在 UDP 53 的 DNS 查询中。速度慢，属于最后手段。"
               onFresh={setSpecial}
             />
           </div>
@@ -123,25 +123,25 @@ function ListenersCard() {
       </div>
       {adding && (
         <Sheet
-          title="New listener"
+          title="新建监听端口"
           onClose={() => setAdding(false)}
           footer={
             <>
-              <button className="btn" onClick={() => setAdding(false)}>Cancel</button>
+              <button className="btn" onClick={() => setAdding(false)}>取消</button>
               <button
                 className="btn btn--primary"
                 onClick={() => void guard(async () => {
                   await api.createListener(newPort, true);
                   setAdding(false);
                   await load();
-                }, `Listening on ${newPort}.`)}
+                }, `正在监听 ${newPort}。`)}
               >
-                Add
+                添加
               </button>
             </>
           }
         >
-          <Field label="TCP port">
+          <Field label="TCP 端口">
             <input className="input mono" type="number" min={1} max={65535} value={newPort} onChange={(e) => setNewPort(Number(e.target.value))} inputMode="numeric" />
           </Field>
         </Sheet>
@@ -165,9 +165,9 @@ function ListenerSwitch({ listener, reload }: { listener: Wire; reload: () => Pr
       const me = list?.find((x) => Number(x.Ports_u32) === port);
       return me ? Boolean(me.Enables_bool) : null;
     },
-    noun: `Listener ${port}`,
-    onWord: "enabled",
-    offWord: "disabled",
+    noun: `监听端口 ${port}`,
+    onWord: "已启用",
+    offWord: "已停用",
   });
   return (
     <span className="switchbox">
@@ -176,7 +176,7 @@ function ListenerSwitch({ listener, reload }: { listener: Wire; reload: () => Pr
         pending={toggle.pending}
         target={toggle.target}
         onToggle={() => void toggle.toggle()}
-        label={`Listener on port ${port}`}
+        label={`端口 ${port} 的监听`}
       />
       <OutcomeNote outcome={toggle.outcome} />
     </span>
@@ -212,8 +212,8 @@ function SpecialListenerSwitch({
       return r ? Boolean(r[field]) : null;
     },
     noun: label,
-    onWord: "enabled",
-    offWord: "disabled",
+    onWord: "已启用",
+    offWord: "已停用",
   });
   return (
     <SwitchRow
@@ -221,7 +221,7 @@ function SpecialListenerSwitch({
       hint={hint}
       toggle={toggle}
       on={on}
-      status={<Pill kind={on ? "ok" : "idle"} label={on ? "enabled" : "disabled"} />}
+      status={<Pill kind={on ? "ok" : "idle"} label={on ? "已启用" : "已停用"} />}
     />
   );
 }
@@ -246,20 +246,20 @@ function AzureSwitch({ azure, onFresh }: { azure: Wire; onFresh: (fresh: Wire) =
       return r ? Boolean(r.IsEnabled_bool) : null;
     },
     noun: "VPN Azure",
-    onWord: "enabled",
-    offWord: "disabled",
+    onWord: "已启用",
+    offWord: "已停用",
   });
   return (
     <SwitchRow
-      label="VPN Azure relay"
-      hint="Reachable through azure even behind NAT, at <hostname>.vpnazure.net."
+      label="VPN Azure 中继"
+      hint="即使身在 NAT 之后也可通过 <hostname>.vpnazure.net 访问。"
       toggle={toggle}
       on={on}
       status={
         on ? (
-          <Pill kind={connected ? "ok" : "busy"} label={connected ? "connected" : "connecting"} />
+          <Pill kind={connected ? "ok" : "busy"} label={connected ? "已连接" : "连接中"} />
         ) : (
-          <Pill kind="idle" label="disabled" />
+          <Pill kind="idle" label="已停用" />
         )
       }
     />
@@ -296,7 +296,7 @@ function ProtocolsCard() {
 
   return (
     <section id="ss-protocols">
-      <SectionTitle>Access protocols</SectionTitle>
+      <SectionTitle>接入协议</SectionTitle>
       <div className="setgrid">
         {/* IPsec / L2TP */}
         <div className="card" style={{ padding: "var(--s4)" }}>
@@ -306,15 +306,15 @@ function ProtocolsCard() {
           ) : (
             <>
               <CheckRow checked={Boolean(ipsec.L2TP_IPsec_bool)} onChange={(v) => { setIpsec({ ...ipsec, L2TP_IPsec_bool: v }); setDirty((d) => ({ ...d, ipsec: true })); }}
-                label="L2TP over IPsec" hint="The built-in VPN of iOS, Android and Windows." />
+                label="L2TP over IPsec" hint="iOS、Android 和 Windows 内置的 VPN。" />
               <CheckRow checked={Boolean(ipsec.L2TP_Raw_bool)} onChange={(v) => { setIpsec({ ...ipsec, L2TP_Raw_bool: v }); setDirty((d) => ({ ...d, ipsec: true })); }}
-                label="Raw L2TP (no encryption)" hint="Only for equipment that cannot do IPsec." />
+                label="裸 L2TP（无加密）" hint="仅供不支持 IPsec 的设备。" />
               <CheckRow checked={Boolean(ipsec.EtherIP_IPsec_bool)} onChange={(v) => { setIpsec({ ...ipsec, EtherIP_IPsec_bool: v }); setDirty((d) => ({ ...d, ipsec: true })); }}
-                label="EtherIP / L2TPv3 over IPsec" hint="Site-to-site from routers; client IDs are defined below." />
-              <Field label="IPsec pre-shared key" hint="What clients type as the 'secret'. Keep it short — some devices truncate at 9 characters.">
+                label="EtherIP / L2TPv3 over IPsec" hint="供路由器做站对站连接；客户端 ID 在下方定义。" />
+              <Field label="IPsec 预共享密钥" hint="客户端输入的“预共享密钥”。保持简短 — 某些设备在 9 个字符处截断。">
                 <input className="input mono" value={secret} onChange={(e) => { setSecret(e.target.value); setDirty((d) => ({ ...d, ipsec: true })); }} autoCapitalize="none" spellCheck={false} />
               </Field>
-              <Field label="Default hub" hint="Where L2TP users land when they do not name a hub.">
+              <Field label="默认虚拟 HUB" hint="L2TP 用户未指明虚拟 HUB 时的落脚点。">
                 <select className="select" value={String(ipsec.L2TP_DefaultHub_str ?? "")} onChange={(e) => { setIpsec({ ...ipsec, L2TP_DefaultHub_str: e.target.value }); setDirty((d) => ({ ...d, ipsec: true })); }}>
                   {hubs.map((h) => <option key={h} value={h}>{h}</option>)}
                 </select>
@@ -329,8 +329,8 @@ function ProtocolsCard() {
                     L2TP_DefaultHub_str: String(ipsec.L2TP_DefaultHub_str ?? ""),
                   });
                   setDirty((d) => ({ ...d, ipsec: false }));
-                }, "IPsec settings saved.")}>
-                  Save IPsec
+                }, "IPsec 设置已保存。")}>
+                  保存 IPsec
                 </button>
               )}
             </>
@@ -339,18 +339,18 @@ function ProtocolsCard() {
 
         {/* OpenVPN / SSTP */}
         <div className="card" style={{ padding: "var(--s4)" }}>
-          <div className="section__t" style={{ marginBottom: "var(--s3)" }}>OpenVPN & SSTP clone</div>
+          <div className="section__t" style={{ marginBottom: "var(--s3)" }}>OpenVPN 与 SSTP 克隆</div>
           {!openvpn ? (
             <LoadingBlock />
           ) : (
             <>
               <CheckRow checked={Boolean(openvpn.EnableOpenVPN_bool)} onChange={(v) => { setOpenvpn({ ...openvpn, EnableOpenVPN_bool: v }); setDirty((d) => ({ ...d, openvpn: true })); }}
-                label="OpenVPN server" hint="Stock OpenVPN clients connect straight to this server." />
-              <Field label="OpenVPN UDP ports" hint="Comma separated.">
+                label="OpenVPN 服务器" hint="原生 OpenVPN 客户端可直接连接本服务器。" />
+              <Field label="OpenVPN UDP 端口" hint="以逗号分隔。">
                 <input className="input mono" value={String(openvpn.OpenVPNPortList_str ?? "")} onChange={(e) => { setOpenvpn({ ...openvpn, OpenVPNPortList_str: e.target.value }); setDirty((d) => ({ ...d, openvpn: true })); }} spellCheck={false} inputMode="numeric" />
               </Field>
               <CheckRow checked={Boolean(openvpn.EnableSSTP_bool)} onChange={(v) => { setOpenvpn({ ...openvpn, EnableSSTP_bool: v }); setDirty((d) => ({ ...d, openvpn: true })); }}
-                label="SSTP server" hint="Microsoft SSTP over 443. Needs the server certificate to be trusted by clients." />
+                label="SSTP 服务器" hint="基于 443 端口的 Microsoft SSTP。需要客户端信任服务器证书。" />
               <div style={{ display: "flex", gap: "var(--s2)", flexWrap: "wrap" }}>
                 {dirty.openvpn && (
                   <button className="btn btn--primary" onClick={() => void guard(async () => {
@@ -360,15 +360,15 @@ function ProtocolsCard() {
                       EnableSSTP_bool: Boolean(openvpn.EnableSSTP_bool),
                     });
                     setDirty((d) => ({ ...d, openvpn: false }));
-                  }, "OpenVPN/SSTP settings saved.")}>
-                    Save
+                  }, "OpenVPN/SSTP 设置已保存。")}>
+                    保存
                   </button>
                 )}
                 <button className="btn" onClick={() => void guard(async () => {
                   const r = await api.openvpnSample();
                   downloadBase64(r.filename, r.zip_base64, "application/zip");
-                }, "Sample client config downloaded.")}>
-                  <IconDownload size={14} /> Sample client config
+                }, "示例客户端配置已下载。")}>
+                  <IconDownload size={14} /> 示例客户端配置
                 </button>
               </div>
             </>
@@ -377,27 +377,27 @@ function ProtocolsCard() {
 
         {/* Azure + DDNS */}
         <div className="card" style={{ padding: "var(--s4)" }}>
-          <div className="section__t" style={{ marginBottom: "var(--s3)" }}>VPN Azure & dynamic DNS</div>
+          <div className="section__t" style={{ marginBottom: "var(--s3)" }}>VPN Azure 与动态 DNS</div>
           {!azure || !ddns ? (
             <LoadingBlock />
           ) : (
             <>
               <AzureSwitch azure={azure} onFresh={setAzure} />
               <KV rows={[
-                ["DDNS hostname", String(ddns.CurrentHostName_str || "—")],
+                ["DDNS 主机名", String(ddns.CurrentHostName_str || "—")],
                 ["FQDN", String(ddns.CurrentFqdn_str || "—")],
                 ["IPv4", String(ddns.CurrentIPv4_str || "—")],
-                ["last error", Number(ddns.Err_IPv4_u32 ?? 0) === 0 ? "none" : String(ddns.ErrStr_IPv4_utf || `code ${ddns.Err_IPv4_u32}`)],
+                ["最近错误", Number(ddns.Err_IPv4_u32 ?? 0) === 0 ? "无" : String(ddns.ErrStr_IPv4_utf || `代码 ${ddns.Err_IPv4_u32}`)],
               ]} />
-              <Field label="Change DDNS hostname" hint="The name half of <name>.softether.net — it must be globally unused.">
+              <Field label="更改 DDNS 主机名" hint="<name>.softether.net 中 <name> 的部分 — 必须全球唯一。">
                 <div style={{ display: "flex", gap: "var(--s2)" }}>
                   <input className="input mono" value={ddnsHost} onChange={(e) => setDdnsHost(e.target.value)} placeholder={String(ddns.CurrentHostName_str ?? "")} autoCapitalize="none" spellCheck={false} />
                   <button className="btn" disabled={!ddnsHost.trim()} onClick={() => void guard(async () => {
                     await api.setDdnsHostname(ddnsHost.trim());
                     setDdnsHost("");
                     await load();
-                  }, "DDNS hostname changed.")}>
-                    Apply
+                  }, "DDNS 主机名已更改。")}>
+                    应用
                   </button>
                 </div>
               </Field>
@@ -425,75 +425,75 @@ function EncryptionCard() {
 
   const uploadCertAndKey = async (certFile: File, keyFile: File) => {
     const [c, k] = await Promise.all([fileToBase64(certFile), fileToBase64(keyFile)]);
-    await guard(() => api.setCert(c, k), "Certificate replaced.");
+    await guard(() => api.setCert(c, k), "证书已替换。");
   };
 
   return (
     <section id="ss-encryption">
-      <SectionTitle>Encryption & certificate</SectionTitle>
+      <SectionTitle>加密与证书</SectionTitle>
       <div className="setgrid">
         <div className="card" style={{ padding: "var(--s4)" }}>
-          <div className="section__t" style={{ marginBottom: "var(--s3)" }}>Cipher</div>
-          <Field label="TLS cipher for VPN sessions" hint="As SoftEther names them, e.g. AES128-SHA. What the server accepts depends on its build.">
+          <div className="section__t" style={{ marginBottom: "var(--s3)" }}>加密算法</div>
+          <Field label="VPN 会话的 TLS 加密算法" hint="名称以 SoftEther 的写法为准，例如 AES128-SHA。服务器实际接受哪些取决于其构建。">
             <input className="input mono" value={cipher ?? ""} onChange={(e) => { setCipher(e.target.value); setCipherDirty(true); }} spellCheck={false} />
           </Field>
           {cipherDirty && (
             <button className="btn btn--primary" onClick={() => void guard(async () => {
               await api.setCipher(cipher ?? "");
               setCipherDirty(false);
-            }, "Cipher saved.")}>
-              Save cipher
+            }, "加密算法已保存。")}>
+              保存加密算法
             </button>
           )}
-          <div className="section__t" style={{ margin: "var(--s4) 0 var(--s3)" }}>Administrator password</div>
-          <Field label="New password" hint="Changes the VPN server's own admin password; the panel updates its stored copy in the same motion.">
+          <div className="section__t" style={{ margin: "var(--s4) 0 var(--s3)" }}>管理员密码</div>
+          <Field label="新密码" hint="修改 VPN 服务器自身的管理员密码；面板会同步更新自己保存的副本。">
             <div style={{ display: "flex", gap: "var(--s2)" }}>
               <input className="input" type="password" value={adminPw} onChange={(e) => setAdminPw(e.target.value)} autoComplete="off" />
               <button className="btn" disabled={!adminPw} onClick={() => void guard(async () => {
                 await api.setAdminPassword(adminPw);
                 setAdminPw("");
-              }, "Administrator password changed.")}>
-                Change
+              }, "管理员密码已修改。")}>
+                修改
               </button>
             </div>
           </Field>
         </div>
 
         <div className="card" style={{ padding: "var(--s4)" }}>
-          <div className="section__t" style={{ marginBottom: "var(--s3)" }}>Server certificate</div>
+          <div className="section__t" style={{ marginBottom: "var(--s3)" }}>服务器证书</div>
           <div style={{ display: "flex", gap: "var(--s2)", flexWrap: "wrap", marginBottom: "var(--s3)" }}>
             <button className="btn" onClick={() => void guard(async () => {
               const r = await api.cert();
               downloadBase64("server.cer", String(r.cert_base64 ?? ""), "application/pkix-cert");
             })}>
-              <IconDownload size={14} /> Download certificate
+              <IconDownload size={14} /> 下载证书
             </button>
-            <button className="btn" onClick={() => setConfirmingRegen(true)}>Regenerate self-signed</button>
+            <button className="btn" onClick={() => setConfirmingRegen(true)}>重新生成自签名证书</button>
           </div>
           <CertUpload onUpload={uploadCertAndKey} />
         </div>
       </div>
       {confirmingRegen && (
         <Sheet
-          title="Regenerate the server certificate"
+          title="重新生成服务器证书"
           onClose={() => setConfirmingRegen(false)}
           footer={
             <>
-              <button className="btn" onClick={() => setConfirmingRegen(false)}>Cancel</button>
+              <button className="btn" onClick={() => setConfirmingRegen(false)}>取消</button>
               <button className="btn btn--danger" disabled={!regenCn.trim()} onClick={() => void guard(async () => {
                 await api.regenerateCert(regenCn.trim());
                 setConfirmingRegen(false);
-              }, "Certificate regenerated.")}>
-                Regenerate
+              }, "证书已重新生成。")}>
+                重新生成
               </button>
             </>
           }
         >
           <div className="lede" style={{ marginBottom: "var(--s3)" }}>
-            A new self-signed certificate replaces the current one immediately. Clients that pinned
-            the old one (and SSTP clients) will complain until they trust the new one.
+            新的自签名证书会立即替换当前证书。固定了旧证书的客户端（以及 SSTP 客户端）
+            在信任新证书之前会报错。
           </div>
-          <Field label="Common name (CN)" hint="Usually the server's public hostname.">
+          <Field label="通用名（CN）" hint="通常为服务器的公网主机名。">
             <input className="input mono" value={regenCn} onChange={(e) => setRegenCn(e.target.value)} placeholder="vpn.example.net" spellCheck={false} autoCapitalize="none" />
           </Field>
         </Sheet>
@@ -508,10 +508,10 @@ function CertUpload({ onUpload }: { onUpload: (cert: File, key: File) => Promise
   const [busy, setBusy] = useState(false);
   return (
     <>
-      <Field label="Replace with your own (certificate + private key)">
+      <Field label="替换为你自己的证书（证书 + 私钥）">
         <input className="input" type="file" accept=".cer,.crt,.pem" onChange={(e) => setCert(e.target.files?.[0] ?? null)} />
       </Field>
-      <Field label="Private key">
+      <Field label="私钥">
         <input className="input" type="file" accept=".key,.pem" onChange={(e) => setKey(e.target.files?.[0] ?? null)} />
       </Field>
       <button
@@ -526,7 +526,7 @@ function CertUpload({ onUpload }: { onUpload: (cert: File, key: File) => Promise
           setKey(null);
         }}
       >
-        {busy && <span className="spin" />} <IconUpload size={14} /> Install certificate
+        {busy && <span className="spin" />} <IconUpload size={14} /> 安装证书
       </button>
     </>
   );
@@ -556,21 +556,20 @@ function BridgeCard() {
         count={bridges?.length}
         actions={
           <button className="btn btn--sm" onClick={() => setAdding(true)} disabled={support ? !support.IsBridgeSupportedOs_bool : false}>
-            <IconPlus size={14} /> New bridge
+            <IconPlus size={14} /> 新建网桥
           </button>
         }
       >
-        Local bridges
+        本地网桥
       </SectionTitle>
       {support && !support.IsBridgeSupportedOs_bool && (
-        <div className="alert alert--warn">This operating system does not support local bridging.</div>
+        <div className="alert alert--warn">当前操作系统不支持本地网桥。</div>
       )}
       {bridges === null ? (
         <LoadingBlock />
       ) : bridges.length === 0 ? (
-        <Empty title="no local bridges">
-          A local bridge joins a Virtual Hub to a physical network adapter, making VPN clients
-          full members of the LAN behind this server.
+        <Empty title="暂无本地网桥">
+          本地网桥把一个虚拟 HUB 接到物理网卡上，让 VPN 客户端成为本服务器身后局域网的正式成员。
         </Empty>
       ) : (
         <div className="rows">
@@ -581,15 +580,15 @@ function BridgeCard() {
                   <span className="mono">{String(b.DeviceName_str)}</span>
                   <span className="micro">↔</span>
                   <span className="mono">{String(b.HubNameLB_str)}</span>
-                  {b.TapMode_bool && <Pill kind="idle" label="tap" />}
-                  <Pill kind={b.Active_bool ? "ok" : b.Online_bool ? "busy" : "idle"} label={b.Active_bool ? "operating" : b.Online_bool ? "starting" : "offline"} />
+                  {b.TapMode_bool && <Pill kind="idle" label="TAP 模式" />}
+                  <Pill kind={b.Active_bool ? "ok" : b.Online_bool ? "busy" : "idle"} label={b.Active_bool ? "运行中" : b.Online_bool ? "启动中" : "离线"} />
                 </div>
               </div>
               <div className="row__side">
-                <button className="btn btn--sm btn--ghost" aria-label="Delete bridge" onClick={() => void guard(async () => {
+                <button className="btn btn--sm btn--ghost" aria-label="删除网桥" onClick={() => void guard(async () => {
                   await api.deleteBridge(String(b.DeviceName_str), String(b.HubNameLB_str));
                   await load();
-                }, "Bridge deleted.")}>
+                }, "网桥已删除。")}>
                   <IconTrash size={14} />
                 </button>
               </div>
@@ -621,7 +620,7 @@ function BridgeSheet({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
     setError(null);
     try {
       await api.addBridge(device, hub);
-      push("ok", "Bridge created.");
+      push("ok", "网桥已创建。");
       onSaved();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -631,24 +630,24 @@ function BridgeSheet({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
 
   return (
     <Sheet
-      title="New local bridge"
+      title="新建本地网桥"
       onClose={onClose}
       footer={
         <>
-          <button className="btn" onClick={onClose}>Cancel</button>
+          <button className="btn" onClick={onClose}>取消</button>
           <button className="btn btn--primary" onClick={save} disabled={busy || !device || !hub}>
-            {busy && <span className="spin" />} Create bridge
+            {busy && <span className="spin" />} 创建网桥
           </button>
         </>
       }
     >
       {error && <ErrorAlert>{error}</ErrorAlert>}
-      <Field label="Network adapter">
+      <Field label="网络适配器">
         {devices === null ? (
           <LoadingBlock />
         ) : (
           <select className="select" value={device} onChange={(e) => setDevice(e.target.value)}>
-            <option value="">— choose —</option>
+            <option value="">— 请选择 —</option>
             {devices.map((d) => (
               <option key={String(d.DeviceName_str)} value={String(d.DeviceName_str)}>
                 {String(d.DeviceName_str)}{d.NetworkConnectionName_utf ? ` (${d.NetworkConnectionName_utf})` : ""}
@@ -657,15 +656,14 @@ function BridgeSheet({ onClose, onSaved }: { onClose: () => void; onSaved: () =>
           </select>
         )}
       </Field>
-      <Field label="Virtual Hub">
+      <Field label="虚拟 HUB">
         <select className="select" value={hub} onChange={(e) => setHub(e.target.value)}>
-          <option value="">— choose —</option>
+          <option value="">— 请选择 —</option>
           {hubs.map((h) => <option key={h} value={h}>{h}</option>)}
         </select>
       </Field>
       <div className="hint">
-        Bridging the adapter the server itself uses can drop its own connectivity on some NICs;
-        a dedicated adapter is the safe choice.
+        桥接服务器自身在用的网卡在某些网卡上会中断其连接；使用一块专用网卡才稳妥。
       </div>
     </Sheet>
   );
@@ -689,11 +687,11 @@ function L3Card() {
 
   return (
     <section id="ss-l3">
-      <SectionTitle count={switches?.length}>Virtual layer-3 switches</SectionTitle>
+      <SectionTitle count={switches?.length}>虚拟三层交换机</SectionTitle>
       <div className="card" style={{ padding: "var(--s4)" }}>
         <div className="lede" style={{ marginBottom: "var(--s3)" }}>
-          An IP router between Virtual Hubs: each interface sits in one hub with one address, and
-          the routing table moves packets between them.
+          虚拟 HUB 之间的 IP 路由器：每个接口位于一个虚拟 HUB 中并持有一个地址，
+          路由表负责在它们之间转发数据包。
         </div>
         {switches === null ? (
           <LoadingBlock />
@@ -702,27 +700,27 @@ function L3Card() {
             {switches.map((s) => (
               <div key={String(s.Name_str)} className="lrow">
                 <span className="mono" style={{ fontWeight: 600 }}>{String(s.Name_str)}</span>
-                <Pill kind={s.Active_bool ? "ok" : "idle"} label={s.Active_bool ? "running" : "stopped"} />
-                <span className="micro">{String(s.NumInterfaces_u32 ?? 0)} if · {String(s.NumTables_u32 ?? 0)} routes</span>
+                <Pill kind={s.Active_bool ? "ok" : "idle"} label={s.Active_bool ? "运行中" : "已停止"} />
+                <span className="micro">{String(s.NumInterfaces_u32 ?? 0)} 个接口 · {String(s.NumTables_u32 ?? 0)} 条路由</span>
                 <span style={{ flex: 1 }} />
-                <button className="btn btn--sm" onClick={() => setOpen(String(s.Name_str))}>Configure</button>
+                <button className="btn btn--sm" onClick={() => setOpen(String(s.Name_str))}>配置</button>
                 <L3Switch sw={s} reload={load} />
-                <button className="btn btn--sm btn--ghost" aria-label="Delete" onClick={() => void guard(async () => {
+                <button className="btn btn--sm btn--ghost" aria-label="删除" onClick={() => void guard(async () => {
                   await api.delL3(String(s.Name_str));
                   await load();
-                }, "Switch deleted.")}>
+                }, "交换机已删除。")}>
                   <IconTrash size={14} />
                 </button>
               </div>
             ))}
             <div style={{ display: "flex", gap: "var(--s2)", marginTop: "var(--s3)" }}>
-              <input className="input mono" placeholder="switch name" value={name} onChange={(e) => setName(e.target.value)} style={{ maxWidth: 240 }} autoCapitalize="none" spellCheck={false} />
+              <input className="input mono" placeholder="交换机名称" value={name} onChange={(e) => setName(e.target.value)} style={{ maxWidth: 240 }} autoCapitalize="none" spellCheck={false} />
               <button className="btn" disabled={!name.trim()} onClick={() => void guard(async () => {
                 await api.addL3(name.trim());
                 setName("");
                 await load();
-              }, "Switch created.")}>
-                <IconPlus size={14} /> Add
+              }, "交换机已创建。")}>
+                <IconPlus size={14} /> 添加
               </button>
             </div>
           </>
@@ -747,9 +745,9 @@ function L3Switch({ sw, reload }: { sw: Wire; reload: () => Promise<Wire[] | nul
       const me = list?.find((x) => String(x.Name_str) === name);
       return me ? Boolean(me.Active_bool) : null;
     },
-    noun: `Layer-3 switch ${name}`,
-    onWord: "running",
-    offWord: "stopped",
+    noun: `三层交换机 ${name}`,
+    onWord: "运行中",
+    offWord: "已停止",
   });
   return (
     <span className="switchbox">
@@ -758,9 +756,9 @@ function L3Switch({ sw, reload }: { sw: Wire; reload: () => Promise<Wire[] | nul
         pending={toggle.pending}
         target={toggle.target}
         onToggle={() => void toggle.toggle()}
-        label={`Layer-3 switch ${name}`}
-        onWord="running"
-        offWord="stopped"
+        label={`三层交换机 ${name}`}
+        onWord="运行中"
+        offWord="已停止"
       />
       <OutcomeNote outcome={toggle.outcome} />
     </span>
@@ -788,14 +786,14 @@ function L3Sheet({ name, onClose }: { name: string; onClose: () => void }) {
   useEffect(() => void load(), [load]);
 
   return (
-    <Sheet title={`Layer-3 switch ${name}`} subtitle="Stop the switch before changing it; SoftEther refuses edits while it runs." onClose={onClose} wide>
-      <SectionTitle count={ifs?.length ?? undefined}>Interfaces</SectionTitle>
+    <Sheet title={`三层交换机 ${name}`} subtitle="修改前请先停止交换机；SoftEther 拒绝在运行时编辑。" onClose={onClose} wide>
+      <SectionTitle count={ifs?.length ?? undefined}>接口</SectionTitle>
       {(ifs ?? []).map((i, index) => (
         <div key={index} className="lrow">
           <span className="mono">{String(i.HubName_str)}</span>
           <span className="mono">{String(i.IpAddress_ip)}/{String(i.SubnetMask_ip)}</span>
           <span style={{ flex: 1 }} />
-          <button className="btn btn--sm btn--ghost" aria-label="Delete" onClick={() => void guard(async () => {
+          <button className="btn btn--sm btn--ghost" aria-label="删除" onClick={() => void guard(async () => {
             await api.delL3If(name, { HubName_str: i.HubName_str });
             await load();
           })}>
@@ -805,31 +803,31 @@ function L3Sheet({ name, onClose }: { name: string; onClose: () => void }) {
       ))}
       <div className="row2" style={{ marginTop: "var(--s2)" }}>
         <select className="select" value={ifDraft.hub} onChange={(e) => setIfDraft({ ...ifDraft, hub: e.target.value })}>
-          <option value="">— hub —</option>
+          <option value="">— 虚拟 HUB —</option>
           {hubs.map((h) => <option key={h} value={h}>{h}</option>)}
         </select>
         <div style={{ display: "flex", gap: "var(--s2)" }}>
           <input className="input mono" placeholder="192.168.1.1" value={ifDraft.ip} onChange={(e) => setIfDraft({ ...ifDraft, ip: e.target.value })} spellCheck={false} />
-          <input className="input mono" placeholder="mask" value={ifDraft.mask} onChange={(e) => setIfDraft({ ...ifDraft, mask: e.target.value })} spellCheck={false} />
+          <input className="input mono" placeholder="掩码" value={ifDraft.mask} onChange={(e) => setIfDraft({ ...ifDraft, mask: e.target.value })} spellCheck={false} />
         </div>
       </div>
       <button className="btn btn--sm" style={{ marginTop: "var(--s2)" }} disabled={!ifDraft.hub || !ifDraft.ip} onClick={() => void guard(async () => {
         await api.addL3If(name, { HubName_str: ifDraft.hub, IpAddress_ip: ifDraft.ip, SubnetMask_ip: ifDraft.mask });
         setIfDraft({ hub: "", ip: "", mask: "255.255.255.0" });
         await load();
-      }, "Interface added.")}>
-        <IconPlus size={14} /> Add interface
+      }, "接口已添加。")}>
+        <IconPlus size={14} /> 添加接口
       </button>
 
-      <SectionTitle count={routes?.length ?? undefined}>Routing table</SectionTitle>
+      <SectionTitle count={routes?.length ?? undefined}>路由表</SectionTitle>
       {(routes ?? []).map((r, index) => (
         <div key={index} className="lrow">
           <span className="mono">{String(r.NetworkAddress_ip)}/{String(r.SubnetMask_ip)}</span>
-          <span className="micro">via</span>
+          <span className="micro">经由</span>
           <span className="mono">{String(r.GatewayAddress_ip)}</span>
-          <span className="micro">metric {String(r.Metric_u32)}</span>
+          <span className="micro">跃点数 {String(r.Metric_u32)}</span>
           <span style={{ flex: 1 }} />
-          <button className="btn btn--sm btn--ghost" aria-label="Delete" onClick={() => void guard(async () => {
+          <button className="btn btn--sm btn--ghost" aria-label="删除" onClick={() => void guard(async () => {
             await api.delL3Route(name, {
               NetworkAddress_ip: r.NetworkAddress_ip, SubnetMask_ip: r.SubnetMask_ip,
               GatewayAddress_ip: r.GatewayAddress_ip, Metric_u32: r.Metric_u32,
@@ -843,10 +841,10 @@ function L3Sheet({ name, onClose }: { name: string; onClose: () => void }) {
       <div className="row2" style={{ marginTop: "var(--s2)" }}>
         <div style={{ display: "flex", gap: "var(--s2)" }}>
           <input className="input mono" placeholder="10.0.0.0" value={routeDraft.net} onChange={(e) => setRouteDraft({ ...routeDraft, net: e.target.value })} spellCheck={false} />
-          <input className="input mono" placeholder="mask" value={routeDraft.mask} onChange={(e) => setRouteDraft({ ...routeDraft, mask: e.target.value })} spellCheck={false} />
+          <input className="input mono" placeholder="掩码" value={routeDraft.mask} onChange={(e) => setRouteDraft({ ...routeDraft, mask: e.target.value })} spellCheck={false} />
         </div>
         <div style={{ display: "flex", gap: "var(--s2)" }}>
-          <input className="input mono" placeholder="gateway" value={routeDraft.gw} onChange={(e) => setRouteDraft({ ...routeDraft, gw: e.target.value })} spellCheck={false} />
+          <input className="input mono" placeholder="网关" value={routeDraft.gw} onChange={(e) => setRouteDraft({ ...routeDraft, gw: e.target.value })} spellCheck={false} />
           <input className="input mono" type="number" min={1} style={{ maxWidth: 90 }} value={routeDraft.metric} onChange={(e) => setRouteDraft({ ...routeDraft, metric: Number(e.target.value) })} />
         </div>
       </div>
@@ -857,8 +855,8 @@ function L3Sheet({ name, onClose }: { name: string; onClose: () => void }) {
         });
         setRouteDraft({ net: "", mask: "255.255.255.0", gw: "", metric: 1 });
         await load();
-      }, "Route added.")}>
-        <IconPlus size={14} /> Add route
+      }, "路由已添加。")}>
+        <IconPlus size={14} /> 添加路由
       </button>
     </Sheet>
   );
@@ -889,18 +887,18 @@ function EtherIpCard() {
         count={ids?.length}
         actions={
           <button className="btn btn--sm" onClick={() => setAdding(true)}>
-            <IconPlus size={14} /> Add client ID
+            <IconPlus size={14} /> 添加客户端 ID
           </button>
         }
       >
-        EtherIP / L2TPv3 client IDs
+        EtherIP / L2TPv3 客户端 ID
       </SectionTitle>
       {ids === null ? (
         <LoadingBlock />
       ) : ids.length === 0 ? (
-        <Empty title="no client IDs">
-          Router-to-router EtherIP/L2TPv3 over IPsec needs each device's ISAKMP ID mapped to a hub
-          and a user here.
+        <Empty title="暂无客户端 ID">
+          路由器之间的 EtherIP/L2TPv3 over IPsec 需要把每台设备的 ISAKMP ID
+          映射到这里的某个虚拟 HUB 和某个用户。
         </Empty>
       ) : (
         <div className="rows">
@@ -909,15 +907,15 @@ function EtherIpCard() {
               <div className="row__main">
                 <div className="row__name mono">{String(entry.Id_str)}</div>
                 <div className="spec">
-                  <span className="chip"><i>hub</i>{String(entry.HubName_str ?? "?")}</span>
-                  <span className="chip"><i>user</i>{String(entry.UserName_str ?? "?")}</span>
+                  <span className="chip"><i>HUB</i>{String(entry.HubName_str ?? "?")}</span>
+                  <span className="chip"><i>用户</i>{String(entry.UserName_str ?? "?")}</span>
                 </div>
               </div>
               <div className="row__side">
-                <button className="btn btn--sm btn--ghost" aria-label="Delete" onClick={() => void guard(async () => {
+                <button className="btn btn--sm btn--ghost" aria-label="删除" onClick={() => void guard(async () => {
                   await api.deleteEtherip(String(entry.Id_str));
                   await load();
-                }, "Client ID removed.")}>
+                }, "客户端 ID 已移除。")}>
                   <IconTrash size={14} />
                 </button>
               </div>
@@ -927,11 +925,11 @@ function EtherIpCard() {
       )}
       {adding && (
         <Sheet
-          title="EtherIP client ID"
+          title="EtherIP 客户端 ID"
           onClose={() => setAdding(false)}
           footer={
             <>
-              <button className="btn" onClick={() => setAdding(false)}>Cancel</button>
+              <button className="btn" onClick={() => setAdding(false)}>取消</button>
               <button className="btn btn--primary" disabled={!draft.id || !draft.hub || !draft.user} onClick={() => void guard(async () => {
                 await api.addEtherip({
                   Id_str: draft.id.trim(), HubName_str: draft.hub, UserName_str: draft.user.trim(), Password_str: draft.password,
@@ -939,26 +937,26 @@ function EtherIpCard() {
                 setAdding(false);
                 setDraft({ id: "", hub: "", user: "", password: "" });
                 await load();
-              }, "Client ID added.")}>
-                Add
+              }, "客户端 ID 已添加。")}>
+                添加
               </button>
             </>
           }
         >
-          <Field label="ISAKMP phase-1 ID" hint="What the device announces, e.g. its hostname or IP.">
+          <Field label="ISAKMP 阶段 1 ID" hint="设备所申报的标识，例如其主机名或 IP。">
             <input className="input mono" value={draft.id} onChange={(e) => setDraft({ ...draft, id: e.target.value })} spellCheck={false} autoCapitalize="none" />
           </Field>
-          <Field label="Virtual Hub">
+          <Field label="虚拟 HUB">
             <select className="select" value={draft.hub} onChange={(e) => setDraft({ ...draft, hub: e.target.value })}>
-              <option value="">— choose —</option>
+              <option value="">— 请选择 —</option>
               {hubs.map((h) => <option key={h} value={h}>{h}</option>)}
             </select>
           </Field>
           <div className="row2">
-            <Field label="Username">
+            <Field label="用户名">
               <input className="input mono" value={draft.user} onChange={(e) => setDraft({ ...draft, user: e.target.value })} spellCheck={false} autoCapitalize="none" />
             </Field>
-            <Field label="Password">
+            <Field label="密码">
               <input className="input" type="password" value={draft.password} onChange={(e) => setDraft({ ...draft, password: e.target.value })} autoComplete="off" />
             </Field>
           </div>
@@ -981,38 +979,38 @@ function FarmCard() {
   }, []);
   usePoll(load, "list", []);
 
-  const TYPES: Record<number, string> = { 0: "standalone", 1: "farm controller", 2: "farm member" };
+  const TYPES: Record<number, string> = { 0: "独立", 1: "集群控制器", 2: "集群成员" };
 
   return (
     <section id="ss-farm">
-      <SectionTitle>Clustering</SectionTitle>
+      <SectionTitle>集群</SectionTitle>
       <div className="card" style={{ padding: "var(--s4)" }}>
         {!farm ? (
           <LoadingBlock />
         ) : (
           <>
             <KV rows={[
-              ["role", TYPES[Number(farm.ServerType_u32)] ?? "?"],
-              ["controller", Number(farm.ServerType_u32) === 2 ? `${farm.ControllerName_str}:${farm.ControllerPort_u32}` : "—"],
-              ["public IP", String(farm.PublicIp_ip || "—")],
-              ["weight", String(farm.Weight_u32 ?? "—")],
+              ["角色", TYPES[Number(farm.ServerType_u32)] ?? "?"],
+              ["控制器", Number(farm.ServerType_u32) === 2 ? `${farm.ControllerName_str}:${farm.ControllerPort_u32}` : "—"],
+              ["公网 IP", String(farm.PublicIp_ip || "—")],
+              ["权重", String(farm.Weight_u32 ?? "—")],
             ]} />
             {Number(farm.ServerType_u32) === 1 && members && (
               <>
-                <div className="section__t" style={{ margin: "var(--s4) 0 var(--s2)" }}>Members</div>
+                <div className="section__t" style={{ margin: "var(--s4) 0 var(--s2)" }}>成员</div>
                 {members.map((m) => (
                   <div key={String(m.Id_u32)} className="lrow">
-                    <Pill kind={m.Controller_bool ? "busy" : "ok"} label={m.Controller_bool ? "controller" : "member"} />
+                    <Pill kind={m.Controller_bool ? "busy" : "ok"} label={m.Controller_bool ? "控制器" : "成员"} />
                     <span className="mono">{String(m.Hostname_str)}</span>
-                    <span className="micro">{String(m.NumSessions_u32 ?? 0)} sessions · {String(m.NumHubs_u32 ?? 0)} hubs</span>
+                    <span className="micro">{String(m.NumSessions_u32 ?? 0)} 会话 · {String(m.NumHubs_u32 ?? 0)} 个 HUB</span>
                   </div>
                 ))}
               </>
             )}
             <div className="hint" style={{ marginTop: "var(--s3)" }}>
-              Changing the clustering role restarts the VPN server and erases parts of its state;
-              SoftEther means it as a provisioning-time decision. It is exposed in the API console
-              (SetFarmSetting) rather than as a casual switch here.
+              更改集群角色会重启 VPN 服务器并清除部分状态；SoftEther
+              把它视为装机时的决定。因此它只暴露在 API 控制台（SetFarmSetting）中，
+              而不是这里随手一拨的开关。
             </div>
           </>
         )}
@@ -1035,15 +1033,15 @@ function KeepSyslogCard() {
   }, []);
 
   const SYSLOG_MODES = [
-    "off",
-    "server log only",
-    "server + hub security logs",
-    "server + hub security + packet logs",
+    "关闭",
+    "仅服务器日志",
+    "服务器 + HUB 安全日志",
+    "服务器 + HUB 安全 + 数据包日志",
   ];
 
   return (
     <section id="ss-keep">
-      <SectionTitle>Keep-alive & syslog</SectionTitle>
+      <SectionTitle>Keep-alive 与 syslog</SectionTitle>
       <div className="setgrid">
         <div className="card" style={{ padding: "var(--s4)" }}>
           <div className="section__t" style={{ marginBottom: "var(--s3)" }}>Internet keep-alive</div>
@@ -1052,23 +1050,23 @@ function KeepSyslogCard() {
           ) : (
             <>
               <CheckRow checked={Boolean(keep.UseKeepConnect_bool)} onChange={(v) => { setKeep({ ...keep, UseKeepConnect_bool: v }); setDirty((d) => ({ ...d, keep: true })); }}
-                label="Send keep-alive packets" hint="Stops an idle dial-up/NAT path from being torn down." />
+                label="发送 keep-alive 数据包" hint="防止空闲的拨号/NAT 链路被回收。" />
               <div className="row2">
-                <Field label="Host">
+                <Field label="主机">
                   <input className="input mono" value={String(keep.KeepConnectHost_str ?? "")} onChange={(e) => { setKeep({ ...keep, KeepConnectHost_str: e.target.value }); setDirty((d) => ({ ...d, keep: true })); }} spellCheck={false} />
                 </Field>
-                <Field label="Port">
+                <Field label="端口">
                   <input className="input mono" type="number" value={Number(keep.KeepConnectPort_u32) || 80} onChange={(e) => { setKeep({ ...keep, KeepConnectPort_u32: Number(e.target.value) }); setDirty((d) => ({ ...d, keep: true })); }} />
                 </Field>
               </div>
               <div className="row2">
-                <Field label="Protocol">
+                <Field label="协议">
                   <select className="select" value={Number(keep.KeepConnectProtocol_u32) || 0} onChange={(e) => { setKeep({ ...keep, KeepConnectProtocol_u32: Number(e.target.value) }); setDirty((d) => ({ ...d, keep: true })); }}>
                     <option value={0}>TCP</option>
                     <option value={1}>UDP</option>
                   </select>
                 </Field>
-                <Field label="Interval (s)">
+                <Field label="间隔（秒）">
                   <input className="input mono" type="number" min={5} value={Number(keep.KeepConnectInterval_u32) || 50} onChange={(e) => { setKeep({ ...keep, KeepConnectInterval_u32: Number(e.target.value) }); setDirty((d) => ({ ...d, keep: true })); }} />
                 </Field>
               </div>
@@ -1082,8 +1080,8 @@ function KeepSyslogCard() {
                     KeepConnectInterval_u32: Number(keep.KeepConnectInterval_u32) || 50,
                   });
                   setDirty((d) => ({ ...d, keep: false }));
-                }, "Keep-alive saved.")}>
-                  Save keep-alive
+                }, "Keep-alive 已保存。")}>
+                  保存 keep-alive
                 </button>
               )}
             </>
@@ -1091,21 +1089,21 @@ function KeepSyslogCard() {
         </div>
 
         <div className="card" style={{ padding: "var(--s4)" }}>
-          <div className="section__t" style={{ marginBottom: "var(--s3)" }}>Syslog forwarding</div>
+          <div className="section__t" style={{ marginBottom: "var(--s3)" }}>Syslog 转发</div>
           {!syslog ? (
             <LoadingBlock />
           ) : (
             <>
-              <Field label="Mode">
+              <Field label="模式">
                 <select className="select" value={Number(syslog.SaveType_u32) || 0} onChange={(e) => { setSyslog({ ...syslog, SaveType_u32: Number(e.target.value) }); setDirty((d) => ({ ...d, syslog: true })); }}>
                   {SYSLOG_MODES.map((m, i) => <option key={i} value={i}>{m}</option>)}
                 </select>
               </Field>
               <div className="row2">
-                <Field label="Syslog host">
+                <Field label="Syslog 主机">
                   <input className="input mono" value={String(syslog.Hostname_str ?? "")} onChange={(e) => { setSyslog({ ...syslog, Hostname_str: e.target.value }); setDirty((d) => ({ ...d, syslog: true })); }} spellCheck={false} />
                 </Field>
-                <Field label="Port">
+                <Field label="端口">
                   <input className="input mono" type="number" value={Number(syslog.Port_u32) || 514} onChange={(e) => { setSyslog({ ...syslog, Port_u32: Number(e.target.value) }); setDirty((d) => ({ ...d, syslog: true })); }} />
                 </Field>
               </div>
@@ -1117,8 +1115,8 @@ function KeepSyslogCard() {
                     Port_u32: Number(syslog.Port_u32) || 514,
                   });
                   setDirty((d) => ({ ...d, syslog: false }));
-                }, "Syslog settings saved.")}>
-                  Save syslog
+                }, "Syslog 设置已保存。")}>
+                  保存 syslog
                 </button>
               )}
             </>
@@ -1137,37 +1135,37 @@ function ConfigCard() {
 
   return (
     <section id="ss-config">
-      <SectionTitle>Configuration file</SectionTitle>
+      <SectionTitle>配置文件</SectionTitle>
       <div className="card" style={{ padding: "var(--s4)" }}>
         <div className="lede" style={{ marginBottom: "var(--s3)" }}>
-          The server's entire state, as the vpn_server.config it keeps on disk. Download it as a
-          backup; restoring replaces everything and restarts the service.
+          服务器的全部状态，即它保存在磁盘上的 vpn_server.config。可下载作为备份；
+          恢复会替换一切并重启服务。
         </div>
         <div style={{ display: "flex", gap: "var(--s2)", flexWrap: "wrap" }}>
           <button className="btn" onClick={() => void guard(async () => {
             const r = await api.getConfig();
             downloadBase64(r.filename || "vpn_server.config", r.config_base64, "text/plain");
-          }, "Configuration downloaded.")}>
-            <IconDownload size={14} /> Download backup
+          }, "配置已下载。")}>
+            <IconDownload size={14} /> 下载备份
           </button>
           <label className="btn">
-            <IconUpload size={14} /> Restore from file
+            <IconUpload size={14} /> 从文件恢复
             <input type="file" hidden onChange={(e) => setRestoring(e.target.files?.[0] ?? null)} />
           </label>
-          <button className="btn" onClick={() => void guard(() => api.flush(), "Volatile state written to disk.")}>
-            Flush to disk
+          <button className="btn" onClick={() => void guard(() => api.flush(), "易失状态已写入磁盘。")}>
+            写入磁盘
           </button>
         </div>
       </div>
       {restoring && (
         <ConfirmSheet
-          title="Restore this configuration?"
-          verb="Restore & restart"
-          typed="restore"
+          title="恢复该配置？"
+          verb="恢复并重启"
+          typed="恢复"
           body={
             <>
-              <b>{restoring.name}</b> replaces the entire configuration of this VPN server — hubs,
-              users, everything — and the server restarts to load it.
+              <b>{restoring.name}</b> 将替换该 VPN 服务器的全部配置 — 虚拟 HUB、用户、一切 —
+              服务器随后重启以加载它。
             </>
           }
           onClose={() => setRestoring(null)}
@@ -1187,30 +1185,30 @@ function DangerZone() {
   const [confirm, setConfirm] = useState<null | "reboot" | "crash">(null);
   return (
     <section id="ss-danger" className="danger">
-      <SectionTitle>Danger zone</SectionTitle>
+      <SectionTitle>危险操作</SectionTitle>
       <div style={{ display: "flex", gap: "var(--s2)", flexWrap: "wrap" }}>
-        <button className="btn" onClick={() => setConfirm("reboot")}>Restart VPN service</button>
-        <button className="btn" onClick={() => setConfirm("crash")}>Force-crash process</button>
+        <button className="btn" onClick={() => setConfirm("reboot")}>重启 VPN 服务</button>
+        <button className="btn" onClick={() => setConfirm("crash")}>强制崩溃进程</button>
       </div>
       {confirm === "reboot" && (
         <ConfirmSheet
-          title="Restart the VPN server service?"
-          verb="Restart"
-          body={<>Every session drops and reconnects. Takes a few seconds.</>}
+          title="重启 VPN 服务器服务？"
+          verb="重启"
+          body={<>所有会话都会断开并重连。需要几秒钟。</>}
           onClose={() => setConfirm(null)}
           onConfirm={() => api.reboot().then(() => undefined)}
         />
       )}
       {confirm === "crash" && (
         <ConfirmSheet
-          title="Force-crash the VPN server?"
-          verb="Crash it"
-          typed="crash"
+          title="强制崩溃 VPN 服务器？"
+          verb="强制崩溃"
+          typed="崩溃"
           body={
             <>
-              The API's most violent call: the process aborts itself without saving anything.
-              Only for a server too wedged to answer a normal restart. If it runs under systemd
-              it will come back on its own.
+              API 中最暴力的调用：进程不保存任何东西直接自行中止。
+              仅用于卡死到连正常重启都无响应的服务器。若它由 systemd 托管，
+              会自行恢复。
             </>
           }
           onClose={() => setConfirm(null)}

@@ -34,12 +34,12 @@ export function HubTables({ hub }: { hub: string }) {
     guard(async () => {
       await api.deleteMac(hub, key);
       await load();
-    }, "MAC entry deleted.");
+    }, "MAC 表项已删除。");
   const removeIp = (key: number) =>
     guard(async () => {
       await api.deleteIp(hub, key);
       await load();
-    }, "IP entry deleted.");
+    }, "IP 表项已删除。");
 
   const rows = tab === "mac" ? mac : ip;
 
@@ -49,31 +49,31 @@ export function HubTables({ hub }: { hub: string }) {
         count={rows?.length}
         actions={
           <div className="seg">
-            <button className={tab === "mac" ? "on" : ""} onClick={() => setTab("mac")}>MAC table</button>
-            <button className={tab === "ip" ? "on" : ""} onClick={() => setTab("ip")}>IP table</button>
+            <button className={tab === "mac" ? "on" : ""} onClick={() => setTab("mac")}>MAC 表</button>
+            <button className={tab === "ip" ? "on" : ""} onClick={() => setTab("ip")}>IP 表</button>
           </div>
         }
       >
-        Address tables
+        地址表
       </SectionTitle>
 
       {rows === null ? (
         <LoadingBlock />
       ) : rows.length === 0 ? (
-        <Empty title="table is empty">Entries appear as sessions carry traffic.</Empty>
+        <Empty title="表为空">会话产生流量后，表项会随之出现。</Empty>
       ) : (
         <div className="card tcard">
           <div className="tscroll">
             <table className="dtable">
               <thead>
                 <tr>
-                  <th>{tab === "mac" ? "MAC address" : "IP address"}</th>
+                  <th>{tab === "mac" ? "MAC 地址" : "IP 地址"}</th>
                   {tab === "mac" && <th>VLAN</th>}
-                  {tab === "ip" && <th>Source</th>}
-                  <th>Session</th>
-                  <th>Learned</th>
-                  <th>Updated</th>
-                  <th className="tact" style={{ width: 60 }} aria-label="Delete" />
+                  {tab === "ip" && <th>来源</th>}
+                  <th>会话</th>
+                  <th>学习于</th>
+                  <th>更新于</th>
+                  <th className="tact" style={{ width: 60 }} aria-label="删除" />
                 </tr>
               </thead>
               <tbody>
@@ -81,10 +81,10 @@ export function HubTables({ hub }: { hub: string }) {
                   <tr key={String(r.Key_u32)}>
                     <td className="tmono">{tab === "mac" ? formatMac(String(r.MacAddress_bin ?? "")) : String(r.IpAddress_ip)}</td>
                     {tab === "mac" && <td className="tmono">{Number(r.VlanId_u32) || "—"}</td>}
-                    {tab === "ip" && <td>{r.DhcpAllocated_bool ? "DHCP" : "learned"}</td>}
+                    {tab === "ip" && <td>{r.DhcpAllocated_bool ? "DHCP" : "学习所得"}</td>}
                     <td className="tmono">
                       {String(r.SessionName_str ?? "—")}
-                      {r.RemoteItem_bool ? <span className="tsub">on {String(r.RemoteHostname_str)}</span> : null}
+                      {r.RemoteItem_bool ? <span className="tsub">位于 {String(r.RemoteHostname_str)}</span> : null}
                     </td>
                     <td className="tmono">{timeAgo(r.CreatedTime_dt as string)}</td>
                     <td className="tmono">{timeAgo(r.UpdatedTime_dt as string)}</td>
@@ -92,7 +92,7 @@ export function HubTables({ hub }: { hub: string }) {
                       <button
                         className="btn btn--sm btn--ghost"
                         onClick={() => void (tab === "mac" ? removeMac(Number(r.Key_u32)) : removeIp(Number(r.Key_u32)))}
-                        aria-label="Delete entry"
+                        aria-label="删除表项"
                       >
                         <IconTrash size={14} />
                       </button>

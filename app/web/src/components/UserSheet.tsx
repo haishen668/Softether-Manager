@@ -142,7 +142,7 @@ export function UserSheet({
       if (editing) {
         await api.setUser(hub, userName, body);
       } else {
-        if (authType === 1 && !password) throw new Error("A password-authenticated user needs a password.");
+        if (authType === 1 && !password) throw new Error("密码认证的用户必须设置密码。");
         body.Name_str = userName;
         await api.createUser(hub, body);
         // CreateUser cannot assign a group; a follow-up SetUser does.
@@ -161,12 +161,12 @@ export function UserSheet({
         await saveUserQuotaDraft(hub, userName, quotaDraft, Boolean(quota));
       } catch (e) {
         setError(
-          `${editing ? "The profile was saved" : `User ${userName} was created`}, but its traffic ` +
-            `limit was not: ${e instanceof Error ? e.message : String(e)}`,
+          `${editing ? "资料已保存" : `用户 ${userName} 已创建`}，但其流量限额未能保存：` +
+            `${e instanceof Error ? e.message : String(e)}`,
         );
         return;
       }
-      push("ok", editing ? "User updated." : `User ${userName} created.`);
+      push("ok", editing ? "用户已更新。" : `用户 ${userName} 已创建。`);
       onSaved(userName);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -177,19 +177,19 @@ export function UserSheet({
 
   return (
     <Sheet
-      title={editing ? `Edit ${existing?.Name_str}` : "New user"}
-      subtitle={`hub ${hub}`}
+      title={editing ? `编辑 ${existing?.Name_str}` : "新建用户"}
+      subtitle={`虚拟 HUB ${hub}`}
       onClose={onClose}
       footer={
         <>
-          <button className="btn" onClick={onClose}>Cancel</button>
+          <button className="btn" onClick={onClose}>取消</button>
           <button
             className="btn btn--primary"
             onClick={save}
             disabled={busy || (!editing && !name.trim())}
           >
             {busy && <span className="spin" />}
-            {editing ? "Save" : "Create user"}
+            {editing ? "保存" : "新建用户"}
           </button>
         </>
       }
@@ -197,7 +197,7 @@ export function UserSheet({
       <div style={{ display: "grid", gap: "var(--s1)" }}>
         {error && <ErrorAlert>{error}</ErrorAlert>}
         {!editing && hubChoices && hubChoices.length > 1 && onHubChange && (
-          <Field label="Virtual Hub" hint="Where this user lives.">
+          <Field label="虚拟 HUB" hint="该用户所属的虚拟 HUB。">
             <select className="select" value={hub} onChange={(e) => onHubChange(e.target.value)}>
               {hubChoices.map((h) => (
                 <option key={h} value={h}>{h}</option>
@@ -206,29 +206,29 @@ export function UserSheet({
           </Field>
         )}
         {!editing && (
-          <Field label="Username" hint="What the client authenticates as. Letters, digits, - _ . are safe.">
+          <Field label="用户名" hint="客户端登录时使用的名称。字母、数字和 - _ . 是安全字符。">
             <input className="input mono" value={name} onChange={(e) => setName(e.target.value)}
               autoFocus autoCapitalize="none" autoCorrect="off" spellCheck={false} />
           </Field>
         )}
         <div className="row2">
-          <Field label="Full name">
+          <Field label="全名">
             <input className="input" value={realname} onChange={(e) => setRealname(e.target.value)} />
           </Field>
-          <Field label="Group" hint="Group members inherit the group's security policy.">
+          <Field label="用户组" hint="组成员继承该组的安全策略。">
             <select className="select" value={group} onChange={(e) => setGroup(e.target.value)}>
-              <option value="">— none —</option>
+              <option value="">— 无 —</option>
               {groups.map((g) => (
                 <option key={g} value={g}>{g}</option>
               ))}
             </select>
           </Field>
         </div>
-        <Field label="Note">
+        <Field label="备注">
           <input className="input" value={note} onChange={(e) => setNote(e.target.value)} />
         </Field>
 
-        <Field label="Authentication">
+        <Field label="认证方式">
           <select className="select" value={authType} onChange={(e) => setAuthType(Number(e.target.value))}>
             {AUTH_TYPE_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -238,12 +238,12 @@ export function UserSheet({
         </Field>
 
         {authType === 1 && (
-          <Field label={editing ? "New password (leave empty to keep)" : "Password"}>
+          <Field label={editing ? "新密码（留空保持不变）" : "密码"}>
             <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
           </Field>
         )}
         {authType === 2 && (
-          <Field label={editing && existing?.UserX_bin ? "Replace certificate (optional)" : "User certificate"} hint="X.509, DER or PEM.">
+          <Field label={editing && existing?.UserX_bin ? "替换证书（可选）" : "用户证书"} hint="X.509 格式，DER 或 PEM 编码。">
             <input
               className="input"
               type="file"
@@ -256,22 +256,22 @@ export function UserSheet({
           </Field>
         )}
         {authType === 3 && (
-          <Field label="Limit to common name" hint="Optional: only certificates carrying this CN. Empty accepts any trusted-signed certificate.">
+          <Field label="限制证书 CN" hint="可选：只接受携带该 CN 的证书。留空则接受任何受信签发的证书。">
             <input className="input mono" value={commonName} onChange={(e) => setCommonName(e.target.value)} spellCheck={false} />
           </Field>
         )}
         {authType === 4 && (
-          <Field label="RADIUS username" hint="Empty uses the VPN username.">
+          <Field label="RADIUS 用户名" hint="留空则使用 VPN 用户名。">
             <input className="input mono" value={radiusUser} onChange={(e) => setRadiusUser(e.target.value)} spellCheck={false} autoCapitalize="none" />
           </Field>
         )}
         {authType === 5 && (
-          <Field label="NT domain username" hint="Empty uses the VPN username.">
+          <Field label="NT 域用户名" hint="留空则使用 VPN 用户名。">
             <input className="input mono" value={ntUser} onChange={(e) => setNtUser(e.target.value)} spellCheck={false} autoCapitalize="none" />
           </Field>
         )}
 
-        <Field label="Expires" hint="After this moment the user cannot connect. Empty means never.">
+        <Field label="过期时间" hint="过期后该用户将无法连接。留空表示永不过期。">
           <input className="input mono" type="datetime-local" value={expires} onChange={(e) => setExpires(e.target.value)} />
         </Field>
 

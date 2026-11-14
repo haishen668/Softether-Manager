@@ -73,20 +73,20 @@ export function Dashboard() {
   }, [status]);
 
   const hour = new Date().getHours();
-  const daypart = hour < 5 ? "night" : hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
+  const daypart = hour < 5 ? "深夜好" : hour < 12 ? "早上好" : hour < 18 ? "下午好" : "晚上好";
 
   return (
     <div className="page">
       <div className="hello">
         <div style={{ minWidth: 0 }}>
-          <h1 className="hello__t">Good {daypart}{user ? `, ${user}` : ""}</h1>
+          <h1 className="hello__t">{daypart}{user ? `，${user}` : ""}</h1>
           <div className="hello__s">
             {probe?.online ? (
-              <>Your VPN server is healthy. <span className="mono">{probe.hostname} · {probe.version}</span></>
+              <>VPN 服务器运行正常。<span className="mono">{probe.hostname} · {probe.version}</span></>
             ) : health === "offline" ? (
-              "The VPN server is not answering."
+              "VPN 服务器没有响应。"
             ) : (
-              "Here's an overview of this machine and its VPN server."
+              "这里是本机及其 VPN 服务器的总览。"
             )}
           </div>
         </div>
@@ -94,60 +94,58 @@ export function Dashboard() {
 
       {health === "unconfigured" ? (
         <Empty
-          title="not connected to SoftEther yet"
+          title="尚未连接 SoftEther"
           action={
             <Link to="/connect" className="btn btn--primary">
-              Connect the server
+              连接服务器
             </Link>
           }
         >
-          Tell the panel the management port and administrator password of the SoftEther
-          instance on this machine, and everything else lights up.
+          告诉面板本机 SoftEther 实例的管理端口和管理员密码，其余的一切随之点亮。
         </Empty>
       ) : health === "offline" ? (
         <ErrorAlert>
-          <div className="alert__t">The VPN server is not answering.</div>
-          {probe?.error} — <Link to="/connect" className="linkish">check the connection</Link>
+          <div className="alert__t">VPN 服务器没有响应。</div>
+          {probe?.error} — <Link to="/connect" className="linkish">检查连接</Link>
         </ErrorAlert>
       ) : (
         <div className="dash">
           {/* ── main column ─────────────────────────────────────────────── */}
           <div className="dash__main">
             <div className="kpis stagger">
-              <Kpi label="Sessions" value={formatCount(status?.NumSessionsTotal_u32)} sub="across all hubs" />
-              <Kpi label="Users" value={formatCount(status?.NumUsers_u32)} sub="accounts on the server" />
+              <Kpi label="在线会话" value={formatCount(status?.NumSessionsTotal_u32)} sub="所有虚拟 HUB 合计" />
+              <Kpi label="用户" value={formatCount(status?.NumUsers_u32)} sub="服务器上的账号" />
               <Kpi
-                label="Received"
+                label="已接收"
                 value={formatBytes((status?.["Recv.UnicastBytes_u64"] ?? 0) + (status?.["Recv.BroadcastBytes_u64"] ?? 0))}
-                sub="since the server started"
+                sub="自服务器启动以来"
               />
               <Kpi
-                label="Sent"
+                label="已发送"
                 value={formatBytes((status?.["Send.UnicastBytes_u64"] ?? 0) + (status?.["Send.BroadcastBytes_u64"] ?? 0))}
-                sub="since the server started"
+                sub="自服务器启动以来"
               />
             </div>
 
             <div className="card panelcard">
               <div className="panelcard__h">
                 <div style={{ minWidth: 0 }}>
-                  <div className="panelcard__t">Virtual hubs</div>
+                  <div className="panelcard__t">虚拟 HUB</div>
                   <div className="panelcard__s">
                     {hubs?.length
-                      ? `${hubs.length} hub${hubs.length === 1 ? "" : "s"} on this server`
-                      : "where users, sessions and access control live"}
+                      ? `本服务器上的 ${hubs.length} 个虚拟 HUB`
+                      : "用户、会话与访问控制所在之处"}
                   </div>
                 </div>
                 <button className="btn btn--sm" onClick={() => setCreatingHub(true)}>
-                  <IconPlus size={14} /> New hub
+                  <IconPlus size={14} /> 新建 HUB
                 </button>
               </div>
               {!hubs ? (
-                <LoadingBlock label="loading hubs" />
+                <LoadingBlock label="正在加载虚拟 HUB" />
               ) : hubs.length === 0 ? (
                 <p className="lede" style={{ margin: 0 }}>
-                  A Virtual Hub is where users, sessions and access control live. Create the
-                  first one.
+                  虚拟 HUB 是用户、会话与访问控制所在之处。创建第一个吧。
                 </p>
               ) : (
                 <div className="feed">
@@ -160,7 +158,7 @@ export function Dashboard() {
                         <span className="feed__m">
                           <span className="feed__t">{name}</span>
                           <span className="feed__s">
-                            {formatCount(h.NumUsers_u32)} users · {formatCount(h.NumSessions_u32)} sessions ·{" "}
+                            {formatCount(h.NumUsers_u32)} 用户 · {formatCount(h.NumSessions_u32)} 会话 ·{" "}
                             {h.HubType_u32 !== undefined ? HUB_TYPES[h.HubType_u32 as number]?.split(" ")[0] : "—"}
                           </span>
                         </span>
@@ -180,13 +178,13 @@ export function Dashboard() {
             {resources === null ? null : resources.available === false ? (
               <div className="alert alert--info" style={{ marginBottom: 0 }}>
                 <div>
-                  <div className="alert__t">Resource monitoring is asleep.</div>
-                  {String(resources.reason ?? "It runs where /proc exists — a Linux host.")}
+                  <div className="alert__t">资源监控处于休眠状态。</div>
+                  {String(resources.reason ?? "它只在存在 /proc 的环境运行 — 即 Linux 主机。")}
                 </div>
               </div>
             ) : (
               <>
-                <SectionTitle>This machine</SectionTitle>
+                <SectionTitle>本机</SectionTitle>
                 <div className="metrics" style={{ marginBottom: 0 }}>
                   <CpuCard snapshot={resources} history={history.cpu} />
                   <MemoryCard snapshot={resources} history={history.memory} />
@@ -201,18 +199,18 @@ export function Dashboard() {
           {/* ── side column ─────────────────────────────────────────────── */}
           <div className="dash__side">
             <div className="inverse hero">
-              <div className="hero__k">This server</div>
+              <div className="hero__k">本服务器</div>
               <div className="hero__name mono truncate" title={probe?.hostname ?? ""}>
                 {probe?.hostname ?? "—"}
               </div>
               <div className="hero__v">{uptimeSeconds ? formatDuration(uptimeSeconds) : "—"}</div>
-              <div className="hero__s">VPN uptime · {probe?.version ?? "version unknown"}</div>
+              <div className="hero__s">VPN 运行时长 · {probe?.version ?? "版本未知"}</div>
               <div className="hero__actions">
                 <button className="btn btn--sm" onClick={() => setCreatingHub(true)}>
-                  <IconPlus size={14} /> New hub
+                  <IconPlus size={14} /> 新建 HUB
                 </button>
                 <Link to="/server-settings" className="btn btn--sm btn--ghost">
-                  <IconSettings size={14} /> Server settings
+                  <IconSettings size={14} /> 服务器设置
                 </Link>
               </div>
             </div>
@@ -220,16 +218,16 @@ export function Dashboard() {
             <div className="card panelcard">
               <div className="panelcard__h">
                 <div>
-                  <div className="panelcard__t">Access protocols</div>
-                  <div className="panelcard__s">ways into this server</div>
+                  <div className="panelcard__t">接入协议</div>
+                  <div className="panelcard__s">进入本服务器的方式</div>
                 </div>
               </div>
               <div className="feed">
-                <ProtocolRow label="SoftEther" on detail={`${(listeners ?? []).filter((l) => l.Enables_bool).map((l) => l.Ports_u32).join(", ") || "no listeners"}`} />
-                <ProtocolRow label="L2TP/IPsec" on={Boolean(ipsec?.L2TP_IPsec_bool)} detail={ipsec ? (ipsec.L2TP_IPsec_bool ? `default hub ${ipsec.L2TP_DefaultHub_str || "—"}` : "off") : "—"} />
-                <ProtocolRow label="OpenVPN" on={Boolean(openvpn?.EnableOpenVPN_bool)} detail={openvpn?.EnableOpenVPN_bool ? `udp ${openvpn.OpenVPNPortList_str}` : "off"} />
-                <ProtocolRow label="SSTP" on={Boolean(openvpn?.EnableSSTP_bool)} detail={openvpn?.EnableSSTP_bool ? "enabled" : "off"} />
-                <ProtocolRow label="VPN Azure" on={Boolean(azure?.IsEnabled_bool)} detail={azure?.IsEnabled_bool ? (ddns?.CurrentHostName_str ? `${ddns.CurrentHostName_str}.vpnazure.net` : "enabled") : "off"} />
+                <ProtocolRow label="SoftEther" on detail={`${(listeners ?? []).filter((l) => l.Enables_bool).map((l) => l.Ports_u32).join(", ") || "无监听端口"}`} />
+                <ProtocolRow label="L2TP/IPsec" on={Boolean(ipsec?.L2TP_IPsec_bool)} detail={ipsec ? (ipsec.L2TP_IPsec_bool ? `默认 HUB ${ipsec.L2TP_DefaultHub_str || "—"}` : "未启用") : "—"} />
+                <ProtocolRow label="OpenVPN" on={Boolean(openvpn?.EnableOpenVPN_bool)} detail={openvpn?.EnableOpenVPN_bool ? `UDP ${openvpn.OpenVPNPortList_str}` : "未启用"} />
+                <ProtocolRow label="SSTP" on={Boolean(openvpn?.EnableSSTP_bool)} detail={openvpn?.EnableSSTP_bool ? "已启用" : "未启用"} />
+                <ProtocolRow label="VPN Azure" on={Boolean(azure?.IsEnabled_bool)} detail={azure?.IsEnabled_bool ? (ddns?.CurrentHostName_str ? `${ddns.CurrentHostName_str}.vpnazure.net` : "已启用") : "未启用"} />
                 <ProtocolRow label="DDNS" on={Boolean(ddns?.CurrentHostName_str)} detail={ddns?.CurrentFqdn_str || "—"} />
               </div>
             </div>
@@ -237,14 +235,14 @@ export function Dashboard() {
             <div className="card panelcard">
               <div className="panelcard__h">
                 <div>
-                  <div className="panelcard__t">Tools</div>
+                  <div className="panelcard__t">工具</div>
                 </div>
               </div>
               <div className="feed">
-                <ToolRow to="/connections" icon={<IconPulse size={16} />} title="Connections" sub="TCP connections into the server, live" />
-                <ToolRow to="/logs" icon={<IconLogs size={16} />} title="Logs" sub="server, hub security and packet logs" />
-                <ToolRow to="/console" icon={<IconTerminal size={16} />} title="API console" sub="every RPC method, callable raw" />
-                <ToolRow to="/server-settings" icon={<IconSettings size={16} />} title="Server settings" sub="listeners, certificate, bridges…" />
+                <ToolRow to="/connections" icon={<IconPulse size={16} />} title="连接" sub="进入服务器的 TCP 连接，实时" />
+                <ToolRow to="/logs" icon={<IconLogs size={16} />} title="日志" sub="服务器、HUB 安全与数据包日志" />
+                <ToolRow to="/console" icon={<IconTerminal size={16} />} title="API 控制台" sub="全部 RPC 方法，可直接原生调用" />
+                <ToolRow to="/server-settings" icon={<IconSettings size={16} />} title="服务器设置" sub="监听端口、证书、网桥…" />
               </div>
             </div>
           </div>
@@ -316,33 +314,33 @@ function CreateHubSheet({ onClose, onCreated }: { onClose: () => void; onCreated
     setBusy(true);
     const body: Wire = { HubName_str: name.trim(), Online_bool: online, HubType_u32: 0 };
     if (password) body.AdminPasswordPlainText_str = password;
-    const ok = await guard(() => api.createHub(body), `Hub ${name.trim()} created.`);
+    const ok = await guard(() => api.createHub(body), `虚拟 HUB ${name.trim()} 已创建。`);
     setBusy(false);
     if (ok) onCreated();
   };
 
   return (
     <Sheet
-      title="New Virtual Hub"
+      title="新建虚拟 HUB"
       onClose={onClose}
       footer={
         <>
-          <button className="btn" onClick={onClose}>Cancel</button>
+          <button className="btn" onClick={onClose}>取消</button>
           <button className="btn btn--primary" onClick={create} disabled={busy || !name.trim()}>
-            {busy && <span className="spin" />} Create hub
+            {busy && <span className="spin" />} 创建 HUB
           </button>
         </>
       }
     >
-      <Field label="Name" hint="Letters, digits, - and _ are safe.">
+      <Field label="名称" hint="字母、数字和 - _ 是安全字符。">
         <input className="input mono" value={name} onChange={(e) => setName(e.target.value)} autoFocus autoCapitalize="none" spellCheck={false} />
       </Field>
-      <Field label="Hub admin password" hint="Optional — lets someone administer only this hub.">
+      <Field label="HUB 管理密码" hint="可选 — 允许某人只管理该 HUB。">
         <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="off" />
       </Field>
       <label className="checkrow">
         <input type="checkbox" checked={online} onChange={(e) => setOnline(e.target.checked)} />
-        <span><span className="t">Bring it online now</span></span>
+        <span><span className="t">创建后立即上线</span></span>
       </label>
     </Sheet>
   );

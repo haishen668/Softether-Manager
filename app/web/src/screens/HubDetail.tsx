@@ -27,16 +27,16 @@ import { HubSettings } from "./hub/HubSettings";
  */
 
 const TABS: { key: string; label: string }[] = [
-  { key: "overview", label: "Overview" },
-  { key: "users", label: "Users" },
-  { key: "groups", label: "Groups" },
-  { key: "sessions", label: "Sessions" },
-  { key: "access", label: "Access control" },
-  { key: "security", label: "Security" },
+  { key: "overview", label: "总览" },
+  { key: "users", label: "用户" },
+  { key: "groups", label: "用户组" },
+  { key: "sessions", label: "在线会话" },
+  { key: "access", label: "访问控制" },
+  { key: "security", label: "安全" },
   { key: "securenat", label: "SecureNAT" },
-  { key: "links", label: "Cascade" },
-  { key: "tables", label: "Tables" },
-  { key: "settings", label: "Hub settings" },
+  { key: "links", label: "级联" },
+  { key: "tables", label: "MAC/IP 表" },
+  { key: "settings", label: "HUB 设置" },
 ];
 
 export function HubDetail({ hub, tab }: { hub: string; tab: string }) {
@@ -62,9 +62,9 @@ export function HubDetail({ hub, tab }: { hub: string; tab: string }) {
       return Boolean(r.online);
     },
     reload: load,
-    noun: `Hub ${hub}`,
-    onWord: "online",
-    offWord: "offline",
+    noun: `虚拟 HUB ${hub}`,
+    onWord: "在线",
+    offWord: "离线",
   });
 
   return (
@@ -79,10 +79,10 @@ export function HubDetail({ hub, tab }: { hub: string; tab: string }) {
         }
         sub={
           <>
-            <Link to={`/`} className="linkish">← dashboard</Link>
+            <Link to={`/`} className="linkish">← 仪表盘</Link>
             {status && (
               <>
-                {" "}· {HUB_TYPES[Number(status.HubType_u32 ?? 0)]} hub
+                {" "}· {HUB_TYPES[Number(status.HubType_u32 ?? 0)]} HUB
               </>
             )}
           </>
@@ -95,9 +95,9 @@ export function HubDetail({ hub, tab }: { hub: string; tab: string }) {
                 pending={onlineToggle.pending}
                 target={onlineToggle.target}
                 onToggle={() => void onlineToggle.toggle()}
-                label="Hub online"
-                onWord="online"
-                offWord="offline"
+                label="HUB 在线"
+                onWord="在线"
+                offWord="离线"
               />
               <OutcomeNote outcome={onlineToggle.outcome} />
             </span>
@@ -105,7 +105,7 @@ export function HubDetail({ hub, tab }: { hub: string; tab: string }) {
         }
       />
 
-      <div className="tabs" role="tablist" aria-label="Hub sections">
+      <div className="tabs" role="tablist" aria-label="HUB 分区">
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -142,7 +142,7 @@ function HubOverview({ hub, status }: { hub: string; status: Wire | null }) {
   }, [hub, hours]);
   usePoll(load, "list", [hub, hours]);
 
-  if (!status) return <LoadingBlock label="asking the hub" />;
+  if (!status) return <LoadingBlock label="正在查询 HUB" />;
 
   const recv = (Number(status["Recv.UnicastBytes_u64"]) || 0) + (Number(status["Recv.BroadcastBytes_u64"]) || 0);
   const send = (Number(status["Send.UnicastBytes_u64"]) || 0) + (Number(status["Send.BroadcastBytes_u64"]) || 0);
@@ -152,40 +152,40 @@ function HubOverview({ hub, status }: { hub: string; status: Wire | null }) {
       <div className="fleet stagger">
         <div className="fleet__cell">
           <div className="fleet__n">{formatCount(status.NumSessions_u32)}</div>
-          <div className="micro">sessions</div>
+          <div className="micro">会话</div>
         </div>
         <div className="fleet__cell">
           <div className="fleet__n">{formatCount(status.NumUsers_u32)}</div>
-          <div className="micro">users</div>
+          <div className="micro">用户</div>
         </div>
         <div className="fleet__cell">
           <div className="fleet__n">{formatCount(status.NumGroups_u32)}</div>
-          <div className="micro">groups</div>
+          <div className="micro">用户组</div>
         </div>
         <div className="fleet__cell">
           <div className="fleet__n">{formatCount(status.NumMacTables_u32)}</div>
-          <div className="micro">MAC entries</div>
+          <div className="micro">MAC 表项</div>
         </div>
         <div className="fleet__cell">
           <div className="fleet__n">{formatBytes(send + recv)}</div>
-          <div className="micro">lifetime traffic</div>
+          <div className="micro">累计流量</div>
         </div>
       </div>
 
-      <SectionTitle actions={<RangeSeg hours={hours} onChange={setHours} />}>Throughput</SectionTitle>
+      <SectionTitle actions={<RangeSeg hours={hours} onChange={setHours} />}>吞吐量</SectionTitle>
       <div className="card" style={{ padding: "var(--s4)" }}>
-        {usage ? <TrafficChart usage={usage} /> : <LoadingBlock label="loading samples" />}
+        {usage ? <TrafficChart usage={usage} /> : <LoadingBlock label="正在加载采样" />}
       </div>
 
-      <SectionTitle>Details</SectionTitle>
+      <SectionTitle>详情</SectionTitle>
       <div className="card" style={{ padding: "var(--s4)" }}>
         <div className="kv">
-          <div><div className="micro">created</div><div className="mono">{formatDate(status.CreatedTime_dt as string)}</div></div>
-          <div><div className="micro">last comm</div><div className="mono">{formatDate(status.LastCommTime_dt as string)}</div></div>
-          <div><div className="micro">last login</div><div className="mono">{formatDate(status.LastLoginTime_dt as string)}</div></div>
-          <div><div className="micro">logins</div><div className="mono">{formatCount(status.NumLogin_u32 as number)}</div></div>
-          <div><div className="micro">IP entries</div><div className="mono">{formatCount(status.NumIpTables_u32 as number)}</div></div>
-          <div><div className="micro">SecureNAT</div><div className="mono">{status.SecureNATEnabled_bool ? "enabled" : "disabled"}</div></div>
+          <div><div className="micro">创建时间</div><div className="mono">{formatDate(status.CreatedTime_dt as string)}</div></div>
+          <div><div className="micro">最近通信</div><div className="mono">{formatDate(status.LastCommTime_dt as string)}</div></div>
+          <div><div className="micro">最近登录</div><div className="mono">{formatDate(status.LastLoginTime_dt as string)}</div></div>
+          <div><div className="micro">登录次数</div><div className="mono">{formatCount(status.NumLogin_u32 as number)}</div></div>
+          <div><div className="micro">IP 表项</div><div className="mono">{formatCount(status.NumIpTables_u32 as number)}</div></div>
+          <div><div className="micro">SecureNAT</div><div className="mono">{status.SecureNATEnabled_bool ? "已启用" : "已停用"}</div></div>
         </div>
       </div>
     </>

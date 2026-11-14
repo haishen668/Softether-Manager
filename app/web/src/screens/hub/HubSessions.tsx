@@ -42,16 +42,16 @@ export function HubSessions({ hub }: { hub: string }) {
     <>
       <SectionTitle
         count={sessions?.length}
-        actions={<SearchBox value={query} onChange={setQuery} placeholder="user, host, IP…" />}
+        actions={<SearchBox value={query} onChange={setQuery} placeholder="用户、主机、IP…" />}
       >
-        Sessions
+        在线会话
       </SectionTitle>
 
       {filtered == null ? (
-        <LoadingBlock label="loading sessions" />
+        <LoadingBlock label="正在加载会话" />
       ) : filtered.length === 0 ? (
-        <Empty title={q ? "nothing matches" : "nobody is connected"}>
-          {q ? "No session matches that search." : "Sessions appear here live as clients connect."}
+        <Empty title={q ? "无匹配结果" : "当前无人连接"}>
+          {q ? "没有匹配该搜索的会话。" : "客户端连接后会话会实时出现在这里。"}
         </Empty>
       ) : (
         <SessionsTable
@@ -65,13 +65,13 @@ export function HubSessions({ hub }: { hub: string }) {
       {open && <SessionSheet hub={hub} name={open} onClose={() => setOpen(null)} />}
       {killing && (
         <ConfirmSheet
-          title="Disconnect this session?"
-          verb="Disconnect"
+          title="断开该会话？"
+          verb="断开"
           body={
             <>
               <span className="mono">{String(killing.Name_str)}</span>
-              {killing.Username_str ? <> — user <b>{String(killing.Username_str)}</b></> : null} is cut
-              immediately. The client may simply reconnect unless the user is disabled first.
+              {killing.Username_str ? <> — 用户 <b>{String(killing.Username_str)}</b></> : null}
+              将被立即切断。除非先停用该用户，否则客户端可能会直接重新连接。
             </>
           }
           onClose={() => setKilling(null)}
@@ -106,21 +106,21 @@ export function SessionsTable({
             <table className="dtable">
               <thead>
                 <tr>
-                  <th>Session</th>
-                  <th>User</th>
-                  <th>Kind</th>
-                  <th>Source</th>
+                  <th>会话</th>
+                  <th>用户</th>
+                  <th>类型</th>
+                  <th>来源</th>
                   <th style={{ width: 80 }}>TCP</th>
-                  <th>Packets</th>
-                  <th>Transfer</th>
-                  <th>Started</th>
-                  <th className="tact" style={{ width: 120 }} aria-label="Actions" />
+                  <th>数据包</th>
+                  <th>流量</th>
+                  <th>开始时间</th>
+                  <th className="tact" style={{ width: 120 }} aria-label="操作" />
                 </tr>
               </thead>
               <tbody>
                 {sessions.map((s) => {
                   const kind = SESSION_TYPE(s);
-                  const system = kind !== "client";
+                  const system = kind !== "客户端";
                   return (
                     <tr key={String(s.Name_str)} className="clickable" onClick={() => onOpen(s)}>
                       <td className="tmono">{String(s.Name_str)}</td>
@@ -159,7 +159,7 @@ export function SessionsTable({
                               void onKill(s);
                             }}
                           >
-                            <IconClose size={13} /> Kill
+                            <IconClose size={13} /> 切断
                           </button>
                         )}
                       </td>
@@ -176,7 +176,7 @@ export function SessionsTable({
       <div className="rows only-mobile-b">
         {sessions.map((s) => {
           const kind = SESSION_TYPE(s);
-          const system = kind !== "client";
+          const system = kind !== "客户端";
           return (
             <button key={String(s.Name_str)} className="row" onClick={() => onOpen(s)}>
               <div className="row__main">
@@ -185,9 +185,9 @@ export function SessionsTable({
                   <Pill kind={system ? "idle" : "ok"} label={kind} />
                 </div>
                 <div className="spec">
-                  {s.ClientIP_ip ? <span className="chip"><i>from</i>{String(s.ClientIP_ip)}</span> : null}
-                  <span className="chip"><i>data</i>{formatBytes(Number(s.PacketSize_u64))}</span>
-                  <span className="chip"><i>since</i>{timeAgo(s.CreatedTime_dt as string)}</span>
+                  {s.ClientIP_ip ? <span className="chip"><i>来源</i>{String(s.ClientIP_ip)}</span> : null}
+                  <span className="chip"><i>流量</i>{formatBytes(Number(s.PacketSize_u64))}</span>
+                  <span className="chip"><i>始于</i>{timeAgo(s.CreatedTime_dt as string)}</span>
                 </div>
               </div>
               <div className="row__side">
@@ -199,7 +199,7 @@ export function SessionsTable({
                       void onKill(s);
                     }}
                   >
-                    Kill
+                    切断
                   </button>
                 )}
               </div>
@@ -235,27 +235,27 @@ export function SessionSheet({ hub,
   }, [hub, name]);
 
   return (
-    <Sheet title="Session" subtitle={name} onClose={onClose} wide>
+    <Sheet title="会话" subtitle={name} onClose={onClose} wide>
       {error && <div className="alert alert--err">{error}</div>}
       {!detail && !error && <LoadingBlock />}
       {detail && (
         <div style={{ display: "grid", gap: "var(--s4)" }}>
           <KV
             rows={[
-              ["user", String(detail.Username_str || "—")],
-              ["client IP", String(detail.Client_Ip_Address_ip || "—")],
-              ["client host", String(detail.SessionStatus_ClientHostName_str || detail.ClientHostname_str || "—")],
-              ["protocol", String(detail.UnderlayProtocol_str || "—")],
-              ["cipher", String(detail.CipherName_str || "plain")],
-              ["UDP accel", detail.IsUsingUdpAcceleration_bool ? "in use" : detail.IsUdpAccelerationEnabled_bool ? "enabled" : "off"],
-              ["TCP connections", `${detail.NumTcpConnections_u32 ?? 0} / ${detail.MaxTcpConnections_u32 ?? 0}`],
-              ["half connection", detail.HalfConnection_bool ? "yes" : "no"],
-              ["compress", detail.UseCompress_bool ? "yes" : "no"],
-              ["started", formatDate(detail.StartTime_dt as string)],
-              ["client", `${detail.ClientProductName_str || "—"} ${detail.ClientProductVer_u32 ?? ""}`],
-              ["client OS", String(detail.ClientOsName_str || "—")],
-              ["sent", formatBytes(Number(detail.TotalSendSizeReal_u64 ?? detail.TotalSendSize_u64))],
-              ["received", formatBytes(Number(detail.TotalRecvSizeReal_u64 ?? detail.TotalRecvSize_u64))],
+              ["用户", String(detail.Username_str || "—")],
+              ["客户端 IP", String(detail.Client_Ip_Address_ip || "—")],
+              ["客户端主机", String(detail.SessionStatus_ClientHostName_str || detail.ClientHostname_str || "—")],
+              ["协议", String(detail.UnderlayProtocol_str || "—")],
+              ["加密算法", String(detail.CipherName_str || "明文")],
+              ["UDP 加速", detail.IsUsingUdpAcceleration_bool ? "使用中" : detail.IsUdpAccelerationEnabled_bool ? "已启用" : "未启用"],
+              ["TCP 连接", `${detail.NumTcpConnections_u32 ?? 0} / ${detail.MaxTcpConnections_u32 ?? 0}`],
+              ["半连接", detail.HalfConnection_bool ? "是" : "否"],
+              ["压缩", detail.UseCompress_bool ? "是" : "否"],
+              ["开始时间", formatDate(detail.StartTime_dt as string)],
+              ["客户端", `${detail.ClientProductName_str || "—"} ${detail.ClientProductVer_u32 ?? ""}`],
+              ["客户端系统", String(detail.ClientOsName_str || "—")],
+              ["已发送", formatBytes(Number(detail.TotalSendSizeReal_u64 ?? detail.TotalSendSize_u64))],
+              ["已接收", formatBytes(Number(detail.TotalRecvSizeReal_u64 ?? detail.TotalRecvSize_u64))],
             ]}
           />
         </div>

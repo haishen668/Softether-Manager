@@ -35,26 +35,26 @@ export function HubLinks({ hub }: { hub: string }) {
         count={links?.length}
         actions={
           <button className="btn btn--primary btn--sm" onClick={() => setCreating(true)}>
-            <IconPlus size={14} /> New cascade
+            <IconPlus size={14} /> 新建级联
           </button>
         }
       >
-        Cascade connections
+        级联连接
       </SectionTitle>
 
       {links === null ? (
         <LoadingBlock />
       ) : links.length === 0 ? (
         <Empty
-          title="no cascades"
+          title="暂无级联"
           action={
             <button className="btn btn--primary" onClick={() => setCreating(true)}>
-              <IconPlus size={15} /> Create a cascade
+              <IconPlus size={15} /> 创建级联
             </button>
           }
         >
-          A cascade bridges this hub to a hub on another SoftEther server, making the two one
-          layer-2 network. Site-to-site VPN, in one object.
+          级联把该虚拟 HUB 与另一台 SoftEther 服务器上的虚拟 HUB 桥接起来，使两者组成同一个二层网络。
+          站对站 VPN，一个对象搞定。
         </Empty>
       ) : (
         <div className="rows">
@@ -68,23 +68,23 @@ export function HubLinks({ hub }: { hub: string }) {
                     <span className="mono">{name}</span>
                     {l.Online_bool ? (
                       l.Connected_bool ? (
-                        <Pill kind="ok" label="established" />
+                        <Pill kind="ok" label="已建立" />
                       ) : (
-                        <Pill kind="busy" label="connecting" />
+                        <Pill kind="busy" label="连接中" />
                       )
                     ) : (
-                      <Pill kind="idle" label="offline" />
+                      <Pill kind="idle" label="离线" />
                     )}
                   </div>
                   <div className="spec">
-                    <span className="chip"><i>to</i>{String(l.Hostname_str)}</span>
-                    <span className="chip"><i>hub</i>{String(l.TargetHubName_str)}</span>
-                    {l.Connected_bool ? <span className="chip"><i>since</i>{timeAgo(l.ConnectedTime_dt as string)}</span> : null}
+                    <span className="chip"><i>至</i>{String(l.Hostname_str)}</span>
+                    <span className="chip"><i>HUB</i>{String(l.TargetHubName_str)}</span>
+                    {l.Connected_bool ? <span className="chip"><i>始于</i>{timeAgo(l.ConnectedTime_dt as string)}</span> : null}
                   </div>
                 </div>
                 <div className="row__side" onClick={(e) => e.stopPropagation()}>
                   <LinkSwitch hub={hub} link={l} reload={load} />
-                  <button className="btn btn--sm btn--ghost" onClick={() => setDeleting(name)} aria-label="Delete">
+                  <button className="btn btn--sm btn--ghost" onClick={() => setDeleting(name)} aria-label="删除">
                     <IconTrash size={14} />
                   </button>
                 </div>
@@ -108,9 +108,9 @@ export function HubLinks({ hub }: { hub: string }) {
       {statusOf && <LinkStatusSheet hub={hub} name={statusOf} onClose={() => setStatusOf(null)} />}
       {deleting && (
         <ConfirmSheet
-          title={`Delete cascade ${deleting}?`}
-          verb="Delete"
-          body={<>The bridge to the other network is torn down and the stored account removed.</>}
+          title={`删除级联 ${deleting}？`}
+          verb="删除"
+          body={<>通向另一个网络的桥接将被拆除，存储的账号也会被移除。</>}
           onClose={() => setDeleting(null)}
           onConfirm={async () => {
             await api.deleteLink(hub, deleting);
@@ -136,9 +136,9 @@ function LinkSwitch({ hub, link, reload }: { hub: string; link: Wire; reload: ()
       const me = list?.find((x) => String(x.AccountName_utf) === name);
       return me ? Boolean(me.Online_bool) : null;
     },
-    noun: `Cascade ${name}`,
-    onWord: "online",
-    offWord: "offline",
+    noun: `级联 ${name}`,
+    onWord: "在线",
+    offWord: "离线",
   });
   return (
     <span className="switchbox">
@@ -147,9 +147,9 @@ function LinkSwitch({ hub, link, reload }: { hub: string; link: Wire; reload: ()
         pending={toggle.pending}
         target={toggle.target}
         onToggle={() => void toggle.toggle()}
-        label={`Cascade ${name}`}
-        onWord="online"
-        offWord="offline"
+        label={`级联 ${name}`}
+        onWord="在线"
+        offWord="离线"
       />
       <OutcomeNote outcome={toggle.outcome} />
     </span>
@@ -188,7 +188,7 @@ function LinkSheet({ hub, onClose, onSaved }: { hub: string; onClose: () => void
       });
       const account = name.trim() || `${host}-${targetHub}`;
       if (online) await api.linkOnline(hub, account, true);
-      push("ok", "Cascade created.");
+      push("ok", "级联已创建。");
       onSaved();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -198,42 +198,42 @@ function LinkSheet({ hub, onClose, onSaved }: { hub: string; onClose: () => void
 
   return (
     <Sheet
-      title="New cascade"
-      subtitle={`from hub ${hub}`}
+      title="新建级联"
+      subtitle={`来自虚拟 HUB ${hub}`}
       onClose={onClose}
       footer={
         <>
-          <button className="btn" onClick={onClose}>Cancel</button>
+          <button className="btn" onClick={onClose}>取消</button>
           <button className="btn btn--primary" onClick={save} disabled={busy || !host.trim() || !targetHub.trim() || !username.trim()}>
-            {busy && <span className="spin" />} Create
+            {busy && <span className="spin" />} 创建
           </button>
         </>
       }
     >
       {error && <ErrorAlert>{error}</ErrorAlert>}
-      <Field label="Name" hint="What this cascade is called here. Empty derives one.">
+      <Field label="名称" hint="该级联在此处的名称。留空则自动生成。">
         <input className="input mono" value={name} onChange={(e) => setName(e.target.value)} autoCapitalize="none" spellCheck={false} />
       </Field>
       <div className="row2">
-        <Field label="Destination server">
+        <Field label="目标服务器">
           <input className="input mono" value={host} onChange={(e) => setHost(e.target.value)} placeholder="vpn2.example.net" spellCheck={false} autoCapitalize="none" inputMode="url" />
         </Field>
-        <Field label="Port">
+        <Field label="端口">
           <input className="input mono" type="number" min={1} max={65535} value={port} onChange={(e) => setPort(Number(e.target.value))} />
         </Field>
       </div>
-      <Field label="Destination hub">
+      <Field label="目标虚拟 HUB">
         <input className="input mono" value={targetHub} onChange={(e) => setTargetHub(e.target.value)} autoCapitalize="none" spellCheck={false} />
       </Field>
       <div className="row2">
-        <Field label="Username" hint="A user on the destination hub.">
+        <Field label="用户名" hint="目标虚拟 HUB 上的一个用户。">
           <input className="input mono" value={username} onChange={(e) => setUsername(e.target.value)} autoCapitalize="none" spellCheck={false} />
         </Field>
-        <Field label="Password">
+        <Field label="密码">
           <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="off" />
         </Field>
       </div>
-      <CheckRow checked={online} onChange={setOnline} label="Connect immediately" />
+      <CheckRow checked={online} onChange={setOnline} label="立即连接" />
     </Sheet>
   );
 }
@@ -256,21 +256,21 @@ function LinkStatusSheet({ hub, name, onClose }: { hub: string; name: string; on
   );
 
   return (
-    <Sheet title="Cascade status" subtitle={name} onClose={onClose} wide>
-      {error && <ErrorAlert>{error} — the link is probably offline.</ErrorAlert>}
+    <Sheet title="级联状态" subtitle={name} onClose={onClose} wide>
+      {error && <ErrorAlert>{error} — 该链路可能已离线。</ErrorAlert>}
       {!status && !error && <LoadingBlock />}
       {status && (
         <KV
           rows={[
-            ["state", status.Connected_bool ? "established" : status.Active_bool ? "connecting" : "offline"],
-            ["server", `${status.ServerName_str ?? "—"}:${status.ServerPort_u32 ?? ""}`],
-            ["product", `${status.ServerProductName_str ?? "—"}`],
-            ["cipher", String(status.CipherName_str || "—")],
-            ["protocol", String(status.UnderlayProtocol_str || "—")],
-            ["TCP connections", `${status.NumTcpConnections_u32 ?? 0} / ${status.MaxTcpConnections_u32 ?? 0}`],
-            ["started", formatDate(status.StartTime_dt as string)],
-            ["sent", formatBytes(Number(status.TotalSendSizeReal_u64 ?? status.TotalSendSize_u64))],
-            ["received", formatBytes(Number(status.TotalRecvSizeReal_u64 ?? status.TotalRecvSize_u64))],
+            ["状态", status.Connected_bool ? "已建立" : status.Active_bool ? "连接中" : "离线"],
+            ["服务器", `${status.ServerName_str ?? "—"}:${status.ServerPort_u32 ?? ""}`],
+            ["产品", `${status.ServerProductName_str ?? "—"}`],
+            ["加密算法", String(status.CipherName_str || "—")],
+            ["协议", String(status.UnderlayProtocol_str || "—")],
+            ["TCP 连接", `${status.NumTcpConnections_u32 ?? 0} / ${status.MaxTcpConnections_u32 ?? 0}`],
+            ["开始时间", formatDate(status.StartTime_dt as string)],
+            ["已发送", formatBytes(Number(status.TotalSendSizeReal_u64 ?? status.TotalSendSize_u64))],
+            ["已接收", formatBytes(Number(status.TotalRecvSizeReal_u64 ?? status.TotalRecvSize_u64))],
           ]}
         />
       )}
